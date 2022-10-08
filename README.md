@@ -1,5 +1,5 @@
 # Drought Ender's Cave Creator 
-***
+
 ## 1. Cave Editor
 
 ### Accessing Caves
