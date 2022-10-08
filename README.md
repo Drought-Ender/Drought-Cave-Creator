@@ -26,7 +26,7 @@ To overwrite the cave that is being worked on, select **File -> Save** or use **
 #### Backup
 
 To backup to the backups folder, selected **File -> Backup** or use **Ctrl + B**, this will create a *.pickle* backup that can be easily loaded.
-#####Note:
+##### Note:
 pickling is not a secure method of storage, do not accept *.pickle* files from people you do not trust.
 
 ### Reading the GUI
