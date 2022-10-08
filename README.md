@@ -38,7 +38,7 @@ In the top center of the cave editor is an enumerated bar of the floors within t
 Remove a floor by accident? Do not fear, the floor itself is not deleated, clicking *Add Floor* will return the floor back before it was deleated.
 
 #### Floorinfo
-
+![Floorinfo Example](https://github.com/Drought-Ender/Drought-Cave-Creator/blob/main/Assets/Floorinfo%20Example.png)
 
 
 
