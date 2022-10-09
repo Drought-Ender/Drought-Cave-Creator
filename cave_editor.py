@@ -662,13 +662,13 @@ class CaveTab(QMainWindow):
         self.floor_tabs.move(75, 0)
         self.add_button = QPushButton(self)
         self.add_button.setText("Add Floor")
-        self.add_button.move(110, 25)
+        self.add_button.move(550, 50)
         self.add_button.setFixedSize(100, 30)
         self.add_button.pressed.connect(self.add_floor)
 
         self.sub_button = QPushButton(self)
         self.sub_button.setText("Remove Floor")
-        self.sub_button.move(260, 25)
+        self.sub_button.move(750, 50)
         self.sub_button.setFixedSize(100, 30)
         self.sub_button.pressed.connect(self.sub_floor)
 

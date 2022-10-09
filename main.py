@@ -24,7 +24,7 @@ class Main(QMainWindow):
 
         logo = Image(self, "./Assets/logo.png")
 
-        version = QLabel("ver 0.0.0", self)
+        version = QLabel("ver 0.0.1", self)
         version.move(10, 440)
 
         open_cave = QPushButton("Open Cave", self)
@@ -46,7 +46,7 @@ class Main(QMainWindow):
 
         self.setCentralWidget(logo)
         self.setGeometry(300, 300, 550, 450)
-        self.setWindowTitle('File dialog')
+        self.setWindowTitle('Cave Creator')
         self.show()
 
 
