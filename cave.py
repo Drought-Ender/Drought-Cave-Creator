@@ -19,7 +19,9 @@ def strip_int(string:str):
     return i
 
 class CaveInfo:
-    def __init__(self, floor_count=0, floors=[]):
+    def __init__(self, floor_count=0, floors=None):
+        if floors is None:
+            floors = []
         self.floor_count = floor_count
         self.floors = floors
 
@@ -48,7 +50,9 @@ class Floorinfo:
         self.seesaw = False
 
 class TekiInfo:
-    def __init__(self, teki_count=0, tekis=[]):
+    def __init__(self, teki_count=0, tekis=None):
+        if tekis is None:
+            tekis = []
         self.teki_count = teki_count
         self.tekis = tekis
 
@@ -73,7 +77,9 @@ class Treasure:
         self.weight = weight
 
 class ItemInfo:
-    def __init__(self, item_count=0, items=[]):
+    def __init__(self, item_count=0, items=None):
+        if items is None:
+            items = []
         self.item_count = item_count
         self.items = items
 
@@ -85,7 +91,9 @@ class Gate:
         self.weight = weight
 
 class GateInfo:
-    def __init__(self, gate_count=0, gates=[]):
+    def __init__(self, gate_count=0, gates=None):
+        if gates is None:
+            gates = []
         self.gate_count = gate_count
         self.gates = gates
 
@@ -96,7 +104,9 @@ class Cap:
         self.dont_dupe = dont_dupe
 
 class CapInfo:
-    def __init__(self, cap_count=0, caps=[]):
+    def __init__(self, cap_count=0, caps=None):
+        if caps is None:
+            caps = []
         self.cap_count = cap_count
         self.caps = caps
 
@@ -431,6 +441,7 @@ def export_cave(caveinfo:CaveInfo):
                 break
             fall = f"${teki.teki.falltype}" if teki.teki.falltype > 0 else ""
             item = f"_{teki.teki.item}" if teki.teki.has_item else ""
+            print(teki.teki.name)
             export_string.append(f"\t{fall}{teki.teki.name}{item} {teki.teki.fill}{teki.teki.weight} \t# weight\n")
             export_string.append(f"\t{teki.spawn} \t# type\n")
 

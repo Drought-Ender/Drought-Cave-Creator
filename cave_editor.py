@@ -1,4 +1,5 @@
 import cave
+import copy
 import datetime
 import settings
 from PyQt6.QtWidgets import (
@@ -120,22 +121,25 @@ class ItemInfoBox(QScrollArea):
                 self.items.append(next_widget)
                 self.layout.addWidget(next_widget)
         self.buttons = AddSubButtons(self)
+        self.buttons.check_disable(len(self.iteminfo.items))
         self.layout.addWidget(self.buttons)
         self.setWidget(self.this_widget)
         self.setWidgetResizable(True)
 
     def update_item(self):
-        for i in range(self.layout.count()):
-            item = self.layout.itemAt(i)
-            if not item is ItemWidget:
+        self.iteminfo = cave.ItemInfo()
+        for item in self.this_widget.children():
+            new_item = cave.Treasure()
+            if type(item) != ItemWidget:
                 continue
             if settings.settings.item_text:
-                self.iteminfo.items[i].name = item.itemcombo.text()
+                new_item.name = item.itemcombo.text()
             else:
-                self.iteminfo.items[i].name = list(cave.item_dict.keys())[item.itemcombo.currentIndex()]
-            self.iteminfo.items[i].fill = item.spawn_count.value()
-            self.iteminfo.items[i].weight = item.weight.value()
-        self.iteminfo.item_count = len(self.items)
+                new_item.name = list(cave.item_dict.keys())[item.itemcombo.currentIndex()]
+            new_item.fill = item.spawn_count.value()
+            new_item.weight = item.weight.value()
+            self.iteminfo.items.append(copy.deepcopy(new_item))
+        self.iteminfo.item_count = len(self.iteminfo.items)
         return self.iteminfo
 
     def add_obj(self):
@@ -186,16 +190,22 @@ class GateInfoBox(QScrollArea):
                 self.gates.append(next_widget)
                 self.layout.addWidget(next_widget)
         self.buttons = AddSubButtons(self)
+        self.buttons.check_disable(len(self.gateinfo.gates))
         self.layout.addWidget(self.buttons)
         self.setWidget(self.this_widget)
         self.setWidgetResizable(True)
     
     def update_gate(self):
-        for i, gate in enumerate(self.gates):
-            self.gateinfo.gates[i].name = gate.name.text()
-            self.gateinfo.gates[i].fill = gate.life.value()
-            self.gateinfo.gates[i].weight = gate.weight.value()
-        self.gateinfo.gate_count = len(self.gates)
+        self.gateinfo = cave.GateInfo()
+        for gate in self.this_widget.children():
+            new_gate = cave.Gate()
+            if type(gate) != GateWidget:
+                continue
+            new_gate.name = gate.name.text()
+            new_gate.fill = gate.life.value()
+            new_gate.weight = gate.weight.value()
+            self.gateinfo.gates.append(copy.deepcopy(new_gate))
+        self.gateinfo.gate_count = len(self.gateinfo.gates)
         return self.gateinfo
 
     def add_obj(self):
@@ -231,29 +241,39 @@ class TekiInfoBox(QScrollArea):
         self.buttons = AddSubButtons(self)
         self.buttons.check_disable(len(self.tekiinfo.tekis))
         self.layout.addWidget(self.buttons)
-
         self.setWidget(self.this_widget)
 
 
         self.setWidgetResizable(True)
     
     def update_teki(self):
-        for i, teki in enumerate(self.tekis):
+        print("updating teki")
+        self.tekiinfo = cave.TekiInfo()
+        for teki in self.this_widget.children():
+            new_teki = cave.Teki()
+            if type(teki) != TekiWidget:
+                continue
             if settings.settings.teki_text:
-                self.tekiinfo.tekis[i].teki.name = teki.tekicombo.text()
+                new_teki.teki.name = teki.tekicombo.text()
+                print(teki)
+                print(teki.tekicombo.text())
             else:
-                self.tekiinfo.tekis[i].teki.name = teki_keys[teki.tekicombo.currentIndex()]
+                new_teki.teki.name = teki_keys[teki.tekicombo.currentIndex()]
+                print(teki)
+                print(teki_keys[teki.tekicombo.currentIndex()])
             if teki.itemcombo.currentIndex() == 0:
-                self.tekiinfo.tekis[i].teki.item = list(cave.item_dict.keys())[0]
-                self.tekiinfo.tekis[i].teki.has_item = False
+                new_teki.teki.item = list(cave.item_dict.keys())[0]
+                new_teki.teki.has_item = False
             else:
-                self.tekiinfo.tekis[i].teki.item = list(cave.item_dict.keys())[teki.itemcombo.currentIndex() - 1]
-                self.tekiinfo.tekis[i].teki.has_item = True
-            self.tekiinfo.tekis[i].teki.falltype = teki.fall.currentIndex()
-            self.tekiinfo.tekis[i].teki.fill = teki.spawn_count.value()
-            self.tekiinfo.tekis[i].teki.weight = teki.weight.value()
-            self.tekiinfo.tekis[i].spawn = teki.spawn.currentIndex()
-        self.tekiinfo.teki_count = len(self.tekis)
+                new_teki.teki.item = list(cave.item_dict.keys())[teki.itemcombo.currentIndex() - 1]
+                new_teki.teki.has_item = True
+            new_teki.teki.falltype = teki.fall.currentIndex()
+            new_teki.teki.fill = teki.spawn_count.value()
+            new_teki.teki.weight = teki.weight.value()
+            new_teki.spawn = teki.spawn.currentIndex()
+            self.tekiinfo.tekis.append(copy.deepcopy(new_teki))
+        self.tekiinfo.teki_count = len(self.tekiinfo.tekis)
+        print([teki.teki.name for teki in self.tekiinfo.tekis])
         return self.tekiinfo
 
     def add_obj(self):
@@ -358,23 +378,28 @@ class CapInfoBox(QScrollArea):
         self.setWidgetResizable(True)
     
     def update_cap(self):
-        for i, cap in enumerate(self.caps):
+        self.capinfo = cave.CapInfo()
+        for cap in self.this_widget.children():
+            new_cap = cave.Cap()
+            if type(cap) != CapWidget:
+                continue
             if settings.settings.teki_text:
-                self.capinfo.caps[i].teki.name = cap.tekicombo.text()
+                new_cap.teki.name = cap.tekicombo.text()
             else:
-                self.capinfo.caps[i].teki.name = teki_keys[cap.tekicombo.currentIndex()]
+                new_cap.teki.name = teki_keys[cap.tekicombo.currentIndex()]
             if cap.itemcombo.currentIndex() == 0:
-                self.capinfo.caps[i].teki.item = list(cave.item_dict.keys())[0]
-                self.capinfo.caps[i].teki.has_item = False
+                new_cap.teki.item = list(cave.item_dict.keys())[0]
+                new_cap.teki.has_item = False
             else:
-                self.capinfo.caps[i].teki.item = list(cave.item_dict.keys())[cap.itemcombo.currentIndex() - 1]
-                self.capinfo.caps[i].teki.has_item = True
-            self.capinfo.caps[i].teki.falltype = cap.fall.currentIndex()
-            self.capinfo.caps[i].teki.fill = cap.spawn_count.value()
-            self.capinfo.caps[i].teki.weight = cap.weight.value()
-            self.capinfo.caps[i].dont_dupe = cap.double.isChecked()
-            self.capinfo.caps[i].cap_type = cap.cap_type.value()
-        self.capinfo.cap_count = len(self.caps)
+                new_cap.teki.item = list(cave.item_dict.keys())[cap.itemcombo.currentIndex() - 1]
+                new_cap.teki.has_item = True
+            new_cap.teki.falltype = cap.fall.currentIndex()
+            new_cap.teki.fill = cap.spawn_count.value()
+            new_cap.teki.weight = cap.weight.value()
+            new_cap.dont_dupe = cap.double.isChecked()
+            new_cap.cap_type = cap.cap_type.value()
+            self.capinfo.caps.append(copy.deepcopy(new_cap))
+        self.capinfo.cap_count = len(self.capinfo.caps)
         return self.capinfo
 
     def add_obj(self):
@@ -592,8 +617,9 @@ class Floor_tab(QWidget):
         self.setLayout(self.layout)
     
     def update_contents(self):
+        print("Updating Contents")
         floorinfo = self.floorinfo.update_floor()
-        floorinfo.floor_end = self.i 
+        floorinfo.floor_end = self.i
         floorinfo.floor_start = self.i
         tekiinfo = self.tekiinfo.update_teki()
         iteminfo = self.iteminfo.update_item()
