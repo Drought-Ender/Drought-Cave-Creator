@@ -1,2 +1,5 @@
 -- Ver 0.0.1 -- 
 ~ Moved Add/Remove Floor buttons
+
+-- Ver 0.0.2 -- 
+= Fixed a bug where the last item in a set would be repeated throught the entire set upon save
