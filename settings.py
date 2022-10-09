@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import QMainWindow, QCheckBox, QPushButton, QLineEdit, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QMessageBox, QFileDialog
 import configparser
+import json
 from os.path import exists
 
 class lineEditLable(QWidget):
@@ -68,6 +69,8 @@ class Settings:
         self.teki_text = False
         self.item_text = False
         self.preset = "pikmin2"
+        self.teki_dict = {}
+        self.item_dict = {}
 
         self.cave_path = "none"
         self.units_path = "none"
@@ -100,6 +103,13 @@ class Settings:
         self.units_path = preset_config["Preset Settings"]["unitsDirectory"]
         self.light_path = preset_config["Preset Settings"]["lightDirectory"]
         self.unit_path = preset_config["Preset Settings"]["unitDirectory"]
+        with open(f"presets/{self.preset}/teki.json", "r") as tekif:
+            f = tekif.read()
+            self.teki_dict = dict(json.loads(f))
+
+        with open(f"presets/{self.preset}/item.json", "r") as itemf:
+            f = itemf.read()
+            self.item_dict = dict(json.loads(f))
 
 settings = Settings()
 settings.init_settings()

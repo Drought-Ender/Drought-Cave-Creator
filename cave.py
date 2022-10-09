@@ -1,15 +1,4 @@
-import json
-
-use_preset = "pikmin2"
-
-with open(f"presets/{use_preset}/teki.json", "r") as tekif:
-    f = tekif.read()
-    teki_dict = dict(json.loads(f))
-
-with open(f"presets/{use_preset}/item.json", "r") as itemf:
-    f = itemf.read()
-    item_dict = dict(json.loads(f))
-
+import settings
 
 def strip_int(string:str):
     try:
@@ -251,7 +240,7 @@ def read_tekibase(tekistr):
         else:
             i = 1
             fall_type = 1
-    for t in teki_dict:
+    for t in settings.settings.teki_dict:
         if (str(tekistr[0][i:]).find(t + "_") == 0) or (len(t) == len(str(tekistr[0][i:])) and str(tekistr[0][i:]).lower().find(t.lower()) == 0):
             teki = t
             break

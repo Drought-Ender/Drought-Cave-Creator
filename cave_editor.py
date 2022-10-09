@@ -12,14 +12,26 @@ import pathlib
 import os
 import pickle
 
-teki_keys = [teki for teki in cave.teki_dict if settings.settings.show_useless_teki or cave.teki_dict[teki]["use"]]
-if settings.settings.use_internal_names:
-    all_teki = [(QIcon(f"presets/{cave.use_preset}/tekiIcons/{teki}.png"), teki) for teki in cave.teki_dict if settings.settings.show_useless_teki or cave.teki_dict[teki]["use"]]
-    all_item = [(QIcon(f"presets/{cave.use_preset}/itemIcons/{item}.png"), item) for item in cave.item_dict]
-else:
-    all_teki = [(QIcon(f"presets/{cave.use_preset}/tekiIcons/{teki}.png"), cave.teki_dict[teki]["common"]) for teki in cave.teki_dict if settings.settings.show_useless_teki or cave.teki_dict[teki]["use"]]
-    all_item = [(QIcon(f"presets/{cave.use_preset}/itemIcons/{item}.png"), cave.item_dict[item]) for item in cave.item_dict]
 
+
+class Keys:
+    def __init__(self):
+        self.teki_keys = []
+        self.all_teki = []
+        self.all_item = []
+        self.settings = copy.deepcopy(settings.settings)
+    
+    def init_items(self):
+        self.teki_keys = [teki for teki in self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
+        if  self.settings.use_internal_names:
+            self.all_teki = [(QIcon(f"presets/{ self.settings.preset}/tekiIcons/{teki}.png"), teki) for teki in  self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
+            self.all_item = [(QIcon(f"presets/{ self.settings.preset}/itemIcons/{item}.png"), item) for item in  self.settings.item_dict]
+        else:
+            self.all_teki = [(QIcon(f"presets/{ self.settings.preset}/tekiIcons/{teki}.png"),  self.settings.teki_dict[teki]["common"]) for teki in  self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
+            self.all_item = [(QIcon(f"presets/{ self.settings.preset}/itemIcons/{item}.png"),  self.settings.item_dict[item]) for item in  self.settings.item_dict]
+            self.settings = copy.deepcopy(settings.settings)
+
+keys = Keys()
 
 class betterSpinBox(QWidget):
     def __init__(self, parent, text, min, max, val):
@@ -65,20 +77,20 @@ class ItemWidget(QWidget):
         super(QWidget, self).__init__(parent)
         self.layout = QGridLayout()
         self.treasure = item
-        if self.treasure.name in list(cave.item_dict.keys()):
-            self.item_index = list(cave.item_dict.keys()).index(self.treasure.name)
+        if self.treasure.name in list(keys.settings.item_dict.keys()):
+            self.item_index = list(keys.settings.item_dict.keys()).index(self.treasure.name)
         else:
             self.item_index = 0
-        if settings.settings.item_text:
+        if keys.settings.item_text:
             self.itemcombo = QLineEdit(self.treasure.name)
         else:
-            self.itemcombo = DefaultInfoMenu(self, all_item, self.item_index)
+            self.itemcombo = DefaultInfoMenu(self, keys.all_item, self.item_index)
         self.spawn_count = QSpinBox()
         self.spawn_count.setValue(self.treasure.fill)
         self.weight = QSpinBox()
         self.weight.setValue(self.treasure.weight)
         self.weight.setMaximum(9)
-        if settings.settings.show_item_weight:
+        if keys.settings.show_item_weight:
             self.layout.addWidget(self.itemcombo, 0, 0, 1, 2)
             self.layout.addWidget(self.spawn_count, 1, 0)
             self.layout.addWidget(self.weight, 1, 1)
@@ -132,10 +144,10 @@ class ItemInfoBox(QScrollArea):
             new_item = cave.Treasure()
             if type(item) != ItemWidget:
                 continue
-            if settings.settings.item_text:
+            if keys.settings.item_text:
                 new_item.name = item.itemcombo.text()
             else:
-                new_item.name = list(cave.item_dict.keys())[item.itemcombo.currentIndex()]
+                new_item.name = list(keys.settings.item_dict.keys())[item.itemcombo.currentIndex()]
             new_item.fill = item.spawn_count.value()
             new_item.weight = item.weight.value()
             self.iteminfo.items.append(copy.deepcopy(new_item))
@@ -168,7 +180,7 @@ class GateWidget(QWidget):
         self.weight.setValue(self.gate.weight)
         self.weight.setMaximum(9)
         self.weight.setMinimum(1)
-        if settings.settings.show_gate_name:
+        if keys.settings.show_gate_name:
             self.layout.addWidget(self.name)
         self.layout.addWidget(self.life)
         self.layout.addWidget(self.weight)
@@ -253,19 +265,19 @@ class TekiInfoBox(QScrollArea):
             new_teki = cave.Teki()
             if type(teki) != TekiWidget:
                 continue
-            if settings.settings.teki_text:
+            if keys.settings.teki_text:
                 new_teki.teki.name = teki.tekicombo.text()
                 print(teki)
                 print(teki.tekicombo.text())
             else:
-                new_teki.teki.name = teki_keys[teki.tekicombo.currentIndex()]
+                new_teki.teki.name = keys.teki_keys[teki.tekicombo.currentIndex()]
                 print(teki)
-                print(teki_keys[teki.tekicombo.currentIndex()])
+                print(keys.teki_keys[teki.tekicombo.currentIndex()])
             if teki.itemcombo.currentIndex() == 0:
-                new_teki.teki.item = list(cave.item_dict.keys())[0]
+                new_teki.teki.item = list(keys.settings.item_dict.keys())[0]
                 new_teki.teki.has_item = False
             else:
-                new_teki.teki.item = list(cave.item_dict.keys())[teki.itemcombo.currentIndex() - 1]
+                new_teki.teki.item = list(keys.settings.item_dict.keys())[teki.itemcombo.currentIndex() - 1]
                 new_teki.teki.has_item = True
             new_teki.teki.falltype = teki.fall.currentIndex()
             new_teki.teki.fill = teki.spawn_count.value()
@@ -296,11 +308,11 @@ class CapWidget(QWidget):
         self.cap = cap
         self.teki_base_obj = self.cap.teki
         name = self.teki_base_obj.name
-        self.index = teki_keys.index(name)
-        if settings.settings.teki_text:
+        self.index = keys.teki_keys.index(name)
+        if keys.settings.teki_text:
             self.tekicombo = QLineEdit(name)
         else:
-            self.tekicombo = DefaultInfoMenu(self, all_teki, self.index)
+            self.tekicombo = DefaultInfoMenu(self, keys.all_teki, self.index)
         self.spawn_count = QSpinBox()
         self.spawn_count.setValue(self.teki_base_obj.fill)
         
@@ -310,11 +322,11 @@ class CapWidget(QWidget):
         self.fall = QComboBox()
         self.fall.addItems(["None", "All", "Pikmin", "Captain", "Carry", "Purple"])
         self.fall.setCurrentIndex(self.teki_base_obj.falltype)
-        if self.teki_base_obj.item in list(cave.item_dict.keys()):
-            self.item_index = list(cave.item_dict.keys()).index(self.teki_base_obj.item)
+        if self.teki_base_obj.item in list(keys.settings.item_dict.keys()):
+            self.item_index = list(keys.settings.keys()).index(self.teki_base_obj.item)
         else:
             self.item_index = 0
-        item_with_none = [(QIcon(f"presets/{cave.use_preset}/itemIcons/None.png"), "None")] + all_item
+        item_with_none = [(QIcon(f"presets/{keys.settings.preset}/itemIcons/None.png"), "None")] + keys.all_item
         if (self.teki_base_obj.has_item):
             self.itemcombo = DefaultInfoMenu(self, item_with_none, self.item_index + 1)
         else:
@@ -331,7 +343,7 @@ class CapWidget(QWidget):
         self.layout.addWidget(self.spawn_count, 2, 0)
         self.layout.addWidget(self.weight, 2, 1)
         self.layout.addWidget(self.double, 2, 2)
-        if settings.settings.show_captype:
+        if keys.settings.show_captype:
             self.layout.addWidget(self.cap_type, 3, 0)
 
         self.setLayout(self.layout)
@@ -383,15 +395,15 @@ class CapInfoBox(QScrollArea):
             new_cap = cave.Cap()
             if type(cap) != CapWidget:
                 continue
-            if settings.settings.teki_text:
+            if keys.settings.teki_text:
                 new_cap.teki.name = cap.tekicombo.text()
             else:
-                new_cap.teki.name = teki_keys[cap.tekicombo.currentIndex()]
+                new_cap.teki.name = keys.teki_keys[cap.tekicombo.currentIndex()]
             if cap.itemcombo.currentIndex() == 0:
-                new_cap.teki.item = list(cave.item_dict.keys())[0]
+                new_cap.teki.item = list(keys.settings.item_dict.keys())[0]
                 new_cap.teki.has_item = False
             else:
-                new_cap.teki.item = list(cave.item_dict.keys())[cap.itemcombo.currentIndex() - 1]
+                new_cap.teki.item = list(keys.settings.item_dict.keys())[cap.itemcombo.currentIndex() - 1]
                 new_cap.teki.has_item = True
             new_cap.teki.falltype = cap.fall.currentIndex()
             new_cap.teki.fill = cap.spawn_count.value()
@@ -423,11 +435,11 @@ class TekiWidget(QWidget):
         self.teki = teki
         self.teki_base_obj = self.teki.teki
         name = self.teki_base_obj.name
-        self.index = teki_keys.index(name)
-        if settings.settings.teki_text:
+        self.index = keys.teki_keys.index(name)
+        if keys.settings.teki_text:
             self.tekicombo = QLineEdit(name)
         else:
-            self.tekicombo = DefaultInfoMenu(self, all_teki, self.index)
+            self.tekicombo = DefaultInfoMenu(self, keys.all_teki, self.index)
         self.spawn_count = QSpinBox()
         self.spawn_count.setValue(self.teki_base_obj.fill)
         
@@ -437,17 +449,17 @@ class TekiWidget(QWidget):
         self.fall = QComboBox()
         self.fall.addItems(["None", "All", "Pikmin", "Captain", "Carry", "Purple"])
         self.fall.setCurrentIndex(self.teki_base_obj.falltype)
-        if self.teki_base_obj.item in list(cave.item_dict.keys()):
-            self.item_index = list(cave.item_dict.keys()).index(self.teki_base_obj.item)
+        if self.teki_base_obj.item in list(keys.settings.item_dict.keys()):
+            self.item_index = list(keys.settings.item_dict.keys()).index(self.teki_base_obj.item)
         else:
             self.item_index = 0
-        item_with_none = [(QIcon(f"presets/{cave.use_preset}/itemIcons/None.png"), "None")] + all_item
+        item_with_none = [(QIcon(f"presets/{keys.settings.preset}/itemIcons/None.png"), "None")] + keys.all_item
         if (self.teki_base_obj.has_item):
             self.itemcombo = DefaultInfoMenu(self, item_with_none, self.item_index + 1)
         else:
             self.itemcombo = DefaultInfoMenu(self, item_with_none, 0)
         self.spawn = QComboBox()
-        if settings.settings.use_internal_groups:
+        if keys.settings.use_internal_groups:
             self.spawn.addItems(["Teki A", "Teki B", "Item", "None", "FixObj", "Teki C", "Plant", "Start", "Teki F"])
         else:
             self.spawn.addItems(["Easy", "Hard", "Item", "None", "Hole", "Seams", "Plant", "Pod", "Special"])
@@ -528,8 +540,8 @@ class Floorinfo_tab(QWidget):
         self.item_num = betterSpinBox(self, "Item Number:", 0, 999, self.floorinfo.item_num)
         self.gate_num = betterSpinBox(self, "Gate Number:", 0, 999, self.floorinfo.gate_num)
         self.skybox = lineEditLable(self, "Skybox:", self.floorinfo.skybox)
-        self.lighting = directoryButton(self, "Lighting File", self.floorinfo.lighting_file, settings.settings.light_path)
-        self.units = directoryButton(self, "Unit File", self.floorinfo.unit_file, settings.settings.unit_path)
+        self.lighting = directoryButton(self, "Lighting File", self.floorinfo.lighting_file, keys.settings.light_path)
+        self.units = directoryButton(self, "Unit File", self.floorinfo.unit_file, keys.settings.unit_path)
         self.plane = QCheckBox("Spawn Collision Plane")
         self.capinfo = QCheckBox("Use Capinfo")
         self.geyser = QCheckBox("Spawn Geyser")
@@ -681,6 +693,7 @@ class FloorTab(QWidget):
 class CaveTab(QMainWindow):
     def __init__(self, caveinfo:cave.CaveInfo, cave_dir:str):
         super().__init__()
+        keys.init_items()
         self.caveinfo = caveinfo
         self.cave_dir = cave_dir
 
