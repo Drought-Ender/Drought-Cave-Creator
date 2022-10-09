@@ -11,12 +11,12 @@ import pathlib
 import os
 import pickle
 
-teki_keys = [teki for teki in cave.teki_dict if settings.show_useless_teki or cave.teki_dict[teki]["use"]]
-if settings.use_internal_names:
-    all_teki = [(QIcon(f"presets/{cave.use_preset}/tekiIcons/{teki}.png"), teki) for teki in cave.teki_dict if settings.show_useless_teki or cave.teki_dict[teki]["use"]]
+teki_keys = [teki for teki in cave.teki_dict if settings.settings.show_useless_teki or cave.teki_dict[teki]["use"]]
+if settings.settings.use_internal_names:
+    all_teki = [(QIcon(f"presets/{cave.use_preset}/tekiIcons/{teki}.png"), teki) for teki in cave.teki_dict if settings.settings.show_useless_teki or cave.teki_dict[teki]["use"]]
     all_item = [(QIcon(f"presets/{cave.use_preset}/itemIcons/{item}.png"), item) for item in cave.item_dict]
 else:
-    all_teki = [(QIcon(f"presets/{cave.use_preset}/tekiIcons/{teki}.png"), cave.teki_dict[teki]["common"]) for teki in cave.teki_dict if settings.show_useless_teki or cave.teki_dict[teki]["use"]]
+    all_teki = [(QIcon(f"presets/{cave.use_preset}/tekiIcons/{teki}.png"), cave.teki_dict[teki]["common"]) for teki in cave.teki_dict if settings.settings.show_useless_teki or cave.teki_dict[teki]["use"]]
     all_item = [(QIcon(f"presets/{cave.use_preset}/itemIcons/{item}.png"), cave.item_dict[item]) for item in cave.item_dict]
 
 
@@ -68,7 +68,7 @@ class ItemWidget(QWidget):
             self.item_index = list(cave.item_dict.keys()).index(self.treasure.name)
         else:
             self.item_index = 0
-        if settings.item_text:
+        if settings.settings.item_text:
             self.itemcombo = QLineEdit(self.treasure.name)
         else:
             self.itemcombo = DefaultInfoMenu(self, all_item, self.item_index)
@@ -77,7 +77,7 @@ class ItemWidget(QWidget):
         self.weight = QSpinBox()
         self.weight.setValue(self.treasure.weight)
         self.weight.setMaximum(9)
-        if settings.show_item_weight:
+        if settings.settings.show_item_weight:
             self.layout.addWidget(self.itemcombo, 0, 0, 1, 2)
             self.layout.addWidget(self.spawn_count, 1, 0)
             self.layout.addWidget(self.weight, 1, 1)
@@ -129,7 +129,7 @@ class ItemInfoBox(QScrollArea):
             item = self.layout.itemAt(i)
             if not item is ItemWidget:
                 continue
-            if settings.item_text:
+            if settings.settings.item_text:
                 self.iteminfo.items[i].name = item.itemcombo.text()
             else:
                 self.iteminfo.items[i].name = list(cave.item_dict.keys())[item.itemcombo.currentIndex()]
@@ -164,7 +164,7 @@ class GateWidget(QWidget):
         self.weight.setValue(self.gate.weight)
         self.weight.setMaximum(9)
         self.weight.setMinimum(1)
-        if settings.show_gate_name:
+        if settings.settings.show_gate_name:
             self.layout.addWidget(self.name)
         self.layout.addWidget(self.life)
         self.layout.addWidget(self.weight)
@@ -239,7 +239,7 @@ class TekiInfoBox(QScrollArea):
     
     def update_teki(self):
         for i, teki in enumerate(self.tekis):
-            if settings.teki_text:
+            if settings.settings.teki_text:
                 self.tekiinfo.tekis[i].teki.name = teki.tekicombo.text()
             else:
                 self.tekiinfo.tekis[i].teki.name = teki_keys[teki.tekicombo.currentIndex()]
@@ -277,7 +277,7 @@ class CapWidget(QWidget):
         self.teki_base_obj = self.cap.teki
         name = self.teki_base_obj.name
         self.index = teki_keys.index(name)
-        if settings.teki_text:
+        if settings.settings.teki_text:
             self.tekicombo = QLineEdit(name)
         else:
             self.tekicombo = DefaultInfoMenu(self, all_teki, self.index)
@@ -311,7 +311,7 @@ class CapWidget(QWidget):
         self.layout.addWidget(self.spawn_count, 2, 0)
         self.layout.addWidget(self.weight, 2, 1)
         self.layout.addWidget(self.double, 2, 2)
-        if settings.show_captype:
+        if settings.settings.show_captype:
             self.layout.addWidget(self.cap_type, 3, 0)
 
         self.setLayout(self.layout)
@@ -359,7 +359,7 @@ class CapInfoBox(QScrollArea):
     
     def update_cap(self):
         for i, cap in enumerate(self.caps):
-            if settings.teki_text:
+            if settings.settings.teki_text:
                 self.capinfo.caps[i].teki.name = cap.tekicombo.text()
             else:
                 self.capinfo.caps[i].teki.name = teki_keys[cap.tekicombo.currentIndex()]
@@ -399,7 +399,7 @@ class TekiWidget(QWidget):
         self.teki_base_obj = self.teki.teki
         name = self.teki_base_obj.name
         self.index = teki_keys.index(name)
-        if settings.teki_text:
+        if settings.settings.teki_text:
             self.tekicombo = QLineEdit(name)
         else:
             self.tekicombo = DefaultInfoMenu(self, all_teki, self.index)
@@ -422,7 +422,7 @@ class TekiWidget(QWidget):
         else:
             self.itemcombo = DefaultInfoMenu(self, item_with_none, 0)
         self.spawn = QComboBox()
-        if settings.use_internal_groups:
+        if settings.settings.use_internal_groups:
             self.spawn.addItems(["Teki A", "Teki B", "Item", "None", "FixObj", "Teki C", "Plant", "Start", "Teki F"])
         else:
             self.spawn.addItems(["Easy", "Hard", "Item", "None", "Hole", "Seams", "Plant", "Pod", "Special"])
@@ -496,15 +496,15 @@ class Floorinfo_tab(QWidget):
         self.echo = betterComboBox(self, "Echo Type:", ["Soil", "Metal", "Concrete", "Tile", "Garden", "Toy"], self.floorinfo.echo)
         self.music = betterComboBox(self, "Music type:", ["Normal", "Boss", "Rest"], self.floorinfo.music)
         self.rooms = betterSpinBox(self, "Room Number:", 0, 99, self.floorinfo.room_num)
-        self.corridor_chance = betterSpinBoxFloat(self, "corridor_chance:", 0, 1, self.floorinfo.corridor_chance)
+        self.corridor_chance = betterSpinBoxFloat(self, "Corridor Probability:", 0, 1, self.floorinfo.corridor_chance)
         self.timer = betterSpinBoxFloat(self, "Wraith Timer:", 0, 99999, self.floorinfo.timer)
         self.corridor_chance.slide.setSingleStep(0.1)
         self.teki_num = betterSpinBox(self, "Teki Number:", 0, 999, self.floorinfo.teki_num)
         self.item_num = betterSpinBox(self, "Item Number:", 0, 999, self.floorinfo.item_num)
         self.gate_num = betterSpinBox(self, "Gate Number:", 0, 999, self.floorinfo.gate_num)
         self.skybox = lineEditLable(self, "Skybox:", self.floorinfo.skybox)
-        self.lighting = directoryButton(self, "Lighting File", self.floorinfo.lighting_file, self.cave_dir)
-        self.units = directoryButton(self, "Unit File", self.floorinfo.unit_file, self.cave_dir)
+        self.lighting = directoryButton(self, "Lighting File", self.floorinfo.lighting_file, settings.settings.light_path)
+        self.units = directoryButton(self, "Unit File", self.floorinfo.unit_file, settings.settings.unit_path)
         self.plane = QCheckBox("Spawn Collision Plane")
         self.capinfo = QCheckBox("Use Capinfo")
         self.geyser = QCheckBox("Spawn Geyser")
@@ -752,7 +752,7 @@ class CaveTab(QMainWindow):
                     self.sub_button.hide()
                     self.sub_button.show()
                 except Exception as e:
-                    error = QMessageBox.critical(self, "Error reading cave", str(e))
+                    QMessageBox.critical(self, "Error reading cave", str(e))
     
     def save_cave(self):
         self.caveinfo = self.floor_tabs.update_contents()
@@ -772,11 +772,15 @@ class CaveTab(QMainWindow):
         with open(cave_file, 'w') as f:
             f.writelines(cave.export_cave(self.caveinfo))
     
-    def save_backup(self):
+    def save_backup(self, prefix=""):
         self.caveinfo = self.floor_tabs.update_contents()
         this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/"
-        with open(os.path.join(this, f"{datetime.datetime.now()}.pickle"), "wb+") as f:
-            pickle.dump(self.caveinfo, f)
+        try:
+            with open(os.path.join(this, f"{prefix}{datetime.datetime.now()}.pickle"), "wb+") as f:
+                pickle.dump(self.caveinfo, f)
+        except FileNotFoundError:
+            QMessageBox.critical(self, "Error saving backup", "Unable to save backup; backups folder is missing")
+
     
     def load_backup(self):
         this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/"
@@ -803,5 +807,5 @@ class CaveTab(QMainWindow):
                     self.sub_button.pressed.connect(self.sub_floor)
                     self.sub_button.hide()
                     self.sub_button.show()
-                except Exception as e:
-                    error = QMessageBox.critical(self, "Error reading cave", f"Error Reading Cave: {e}")
+                except:
+                    QMessageBox.critical(self, "Error reading cave", f"Backup is corrupt")

@@ -1,10 +1,76 @@
 # Drought Ender's Cave Creator 
+
+## Presets & Preset Settings
+
+### What is a preset folder?
+
+#### What does it do?
+
+In the repository, you have have noted a folder named *presets* containing a signular preset titled *pikmin2*, this folder is designed to allow you to create custom enemy and treasure groups for a hack without having to re-write any code within cave creator beforehand.
+
+#### What does it contain?
+
+##### teki.json
+this is a .json file containing every enemy, it is formated like this:
+```
+{internal name (string) : 
+{"common" : common name (string), 
+"id" : piklopedia id (int), 
+"use" : show teki (bool) }
+}
+```
+##### item.json
+this is a .json file containing every treasure, it is formated like this:
+```
+{internal name (string) : common name (string) }
+```
+
+##### preset.ini
+this is a file containing the locations of items in use with the editors, you do not need to worry about it.
+
+##### tekiIcons
+this is a folder containing .pngs of each enemy listed in *teki.json*
+
+##### itemIcons
+this is a folder containing .pngs of each treasure listed in *item.json*
+
+### Creating a new preset
+1. Copy the *pikmin2* preset and rename it to whatever you'd like
+2. Add any custom treasures' names into *item.json*
+3. Add any custom enemies' names into *teki.json*
+4. (optional) update *tekiIcons*
+5. (optional) update *itemIcons*
+
+you're now ready to use the preset for whatever mod you'd like
+
+### Preset Settings
+
+#### Where is it?
+Preset settings can be found in the *options* menu, and has it's own button and text box for it.
+
+##### Note:
+Attempting to load or edit the presets of a non-existing directory will throw a warning and disallow you from doing so, make sure it's spelt right and using correct capitalization.
+
+#### Setting up
+
+After opening the presets menu, there will be 5 buttons, excluding **Save Preset Settings**. These buttons are:
+- Open units txts from folder
+- Open caves from folder
+- Open units arc from folder
+- Open lighting from folder
+- Set all from root folder
+
+The text boxes below them contain the locations that will be opened from when required during usage from the editors. 
+To set it up properly, simply click the **Set all from Root folder** button, and open the root of the hack's folder, then press **Save Preset Settings** and close the tab - your preset it is ready to be used for modding, have fun!
+##### Note:
+If you're using a file framework that restructures the locations and names of the folders, the **Set all from Root folder** button will fail to find the folders for each setting - if that is the case, you will have to path to the folders containing the items for each setting by hand.
+
 ## Cave Editor
 
 ### Accessing Caves
 
 #### Open Cave
-Opening caves is pretty simple, simply click **Open Cave** and go to the location in which your cave is stored and double click on the .txt file.
+**Open Cave** will route you to you're preset's caves folder, where you can select a cave file to load into the editor with.
 
 #### New Cave
 **New Cave** will jump you straight into the editor with a completely blank cave, where you can save your cave to a location immediantly

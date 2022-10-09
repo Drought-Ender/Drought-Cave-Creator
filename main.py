@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QMainWindow, QFileDialog, QApplication, QPushButton, QMessageBox, QLabel, QWidget, QHBoxLayout)
-from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtGui import QPixmap
 import pickle
 import cave
 import pathlib
@@ -23,6 +23,9 @@ class Main(QMainWindow):
         self.home_dir = str(pathlib.Path.home())
 
         logo = Image(self, "./Assets/logo.png")
+
+        version = QLabel("ver 0.0.0", self)
+        version.move(10, 440)
 
         open_cave = QPushButton("Open Cave", self)
         open_cave.move(100, 100)
@@ -49,16 +52,16 @@ class Main(QMainWindow):
 
     def open_cave(self):
 
-            cave_file = QFileDialog.getOpenFileName(self, "Open cave file", self.home_dir, "Cave Files (*.txt)")
+            cave_file = QFileDialog.getOpenFileName(self, "Open cave file", settings.settings.cave_path, "Cave Files (*.txt)")
             if cave_file[0]:
                 with open(cave_file[0], 'rb') as f:
                     try:
                         data = f.readlines()
                         self.caveinfo = cave.read_cave(data)
                     except BaseException as e:
-                        error = QMessageBox.critical(self, "Error reading cave", f"Error Reading Cave: {e}")
-
-                self.show_dialog = cave_editor.CaveTab(self.caveinfo, cave_file[0])
+                        QMessageBox.critical(self, "Error reading cave", f"Error Reading Cave: {e}")
+                    else:
+                        self.show_dialog = cave_editor.CaveTab(self.caveinfo, cave_file[0])
 
 
     def new_cave(self):
@@ -70,9 +73,11 @@ class Main(QMainWindow):
         pickel_file = QFileDialog.getOpenFileName(self, "Open Pickle Backup", this, "Drought-Cave Pickle Data files (*.pickle)")
         if pickel_file[0]:
             with open(pickel_file[0], 'rb') as f:
-                self.caveinfo = pickle.load(f)
-
-            self.show_dialog = cave_editor.CaveTab(self.caveinfo, pickel_file[0])
+                try:
+                    self.caveinfo = pickle.load(f)
+                    self.show_dialog = cave_editor.CaveTab(self.caveinfo, pickel_file[0])
+                except:
+                    QMessageBox.critical(self, "Error reading cave", "Cave Backup is corrupt")
 
     def open_settings(self):
         self.show_dialog = settings.SettingsGUI()
