@@ -657,7 +657,6 @@ class CaveTab(QMainWindow):
         super().__init__()
         self.caveinfo = caveinfo
         self.cave_dir = cave_dir
-        print(self.caveinfo.floor_count)
 
         self.floor_tabs = FloorTab(self, self.cave_dir)
         self.floor_tabs.move(75, 0)

@@ -331,8 +331,6 @@ def read_cap(cave, start_index):
         else:
             comment_start = line.index("#") if "#" in line else -1
             type_read = line[4:comment_start].strip(" \\trnb")
-            print(type_read)
-            print(type_read == "1")
             cap.append(Cap(strip_int(captype_read), read_tekibase(cap_read), type_read == "1"))
         if i == cap_count * 3 - 1:
             return CapInfo(cap_count, cap), pad_close(cave, start_index + i)

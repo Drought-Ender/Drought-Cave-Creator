@@ -54,7 +54,6 @@ class rootButton(QWidget):
 
     def open_file(self):
         file = QFileDialog.getExistingDirectory(self, "Open Cave File", self.cave_dir)
-        print(file)
         self.parent.root(file)
 
 class Settings:
