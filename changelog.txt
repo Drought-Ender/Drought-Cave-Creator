@@ -3,3 +3,7 @@
 
 -- Ver 0.0.2 -- 
 = Fixed a bug where the last item in a set would be repeated throught the entire set upon save
+
+-- Ver 0.0.3 -- 
+= Fixed a bug where preset settings were not taken into account
++ added new preset loading behavior to fix crashes caused by mixing settings
