@@ -191,7 +191,7 @@ You may notice that the capinfo section is missing, that is because it has been 
 This feature is planned, but has not been implemented yet
 
 ## Lighting Editor
-This feature is planned, but has not been implemented yet
+Instructions comming soon
 
 ## Unit Layout Editor
 This feature is planned, but has not been implemented yet, this will not be added on release
