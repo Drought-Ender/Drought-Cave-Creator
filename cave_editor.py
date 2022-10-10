@@ -317,7 +317,7 @@ class CapWidget(QWidget):
         self.fall.addItems(["None", "All", "Pikmin", "Captain", "Carry", "Purple"])
         self.fall.setCurrentIndex(self.teki_base_obj.falltype)
         if self.teki_base_obj.item in list(keys.settings.item_dict.keys()):
-            self.item_index = list(keys.settings.keys()).index(self.teki_base_obj.item)
+            self.item_index = list(keys.settings.item_dict.keys()).index(self.teki_base_obj.item)
         else:
             self.item_index = 0
         item_with_none = [(QIcon(f"presets/{keys.settings.preset}/itemIcons/None.png"), "None")] + keys.all_item
