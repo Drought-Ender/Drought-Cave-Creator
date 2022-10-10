@@ -259,7 +259,6 @@ class TekiInfoBox(QScrollArea):
         self.setWidgetResizable(True)
     
     def update_teki(self):
-        print("updating teki")
         self.tekiinfo = cave.TekiInfo()
         for teki in self.this_widget.children():
             new_teki = cave.Teki()
@@ -267,12 +266,8 @@ class TekiInfoBox(QScrollArea):
                 continue
             if keys.settings.teki_text:
                 new_teki.teki.name = teki.tekicombo.text()
-                print(teki)
-                print(teki.tekicombo.text())
             else:
                 new_teki.teki.name = keys.teki_keys[teki.tekicombo.currentIndex()]
-                print(teki)
-                print(keys.teki_keys[teki.tekicombo.currentIndex()])
             if teki.itemcombo.currentIndex() == 0:
                 new_teki.teki.item = list(keys.settings.item_dict.keys())[0]
                 new_teki.teki.has_item = False
@@ -285,7 +280,6 @@ class TekiInfoBox(QScrollArea):
             new_teki.spawn = teki.spawn.currentIndex()
             self.tekiinfo.tekis.append(copy.deepcopy(new_teki))
         self.tekiinfo.teki_count = len(self.tekiinfo.tekis)
-        print([teki.teki.name for teki in self.tekiinfo.tekis])
         return self.tekiinfo
 
     def add_obj(self):
@@ -629,7 +623,6 @@ class Floor_tab(QWidget):
         self.setLayout(self.layout)
     
     def update_contents(self):
-        print("Updating Contents")
         floorinfo = self.floorinfo.update_floor()
         floorinfo.floor_end = self.i
         floorinfo.floor_start = self.i
@@ -769,6 +762,7 @@ class CaveTab(QMainWindow):
         if cave_file[0]:
             with open(cave_file[0], 'rb') as f:
                 try:
+                    self.cave_dir = cave_file[0]
                     data = f.readlines()
                     self.caveinfo = cave.read_cave(data)
                     self.floor_tabs.hide()
@@ -807,12 +801,13 @@ class CaveTab(QMainWindow):
         cave_file = QFileDialog.getSaveFileName(self, "Save Cave as", self.cave_dir)[0]
         if not cave_file.endswith(".txt"):
             cave_file += ".txt"
+        self.cave_dir = cave_file
         with open(cave_file, 'w') as f:
             f.writelines(cave.export_cave(self.caveinfo))
     
     def save_backup(self):
         self.caveinfo = self.floor_tabs.update_contents()
-        this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/"
+        this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/Cave/"
         try:
             with open(os.path.join(this, f"{datetime.datetime.now()}.pickle"), "wb+") as f:
                 pickle.dump(self.caveinfo, f)
@@ -821,7 +816,7 @@ class CaveTab(QMainWindow):
 
     
     def load_backup(self):
-        this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/"
+        this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/Cave/"
         pickel_file = QFileDialog.getOpenFileName(self, "Open pickel data file", this, "Drought-Cave Pickle Data files (*.pickle)")
         if pickel_file[0]:
             with open(pickel_file[0], 'rb') as f:

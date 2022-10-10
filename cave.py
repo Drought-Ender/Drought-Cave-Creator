@@ -111,7 +111,7 @@ class Floor:
 
 def read_cave(cave):
     floor_num = str(cave[2])
-    comment_start = floor_num.index("#")
+    comment_start = floor_num.find("#")
     floor_num = floor_num[4:comment_start].strip()
     floor_num = floor_num.split(" ")
     
@@ -148,7 +148,7 @@ def read_floor(cave, start_index):
     for i, line in enumerate(cave[start_index:]):
         line = str(line)
         
-        comment_start = line.index("#") if "#" in line else -1
+        comment_start = line.find("#")
         stripped_line = line[4:comment_start].strip()
         floor_read.append(stripped_line.split(" "))
         if floor_read[-1][0] == "{_eof}":
@@ -211,11 +211,11 @@ def read_teki(cave, start_index):
     for i, line in enumerate(cave[start_index:]):
         line = str(line)
         if i % 2 == 0:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             teki_read = line[4:comment_start].strip(" \\")
             teki_read = teki_read.split(" ")
         else:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             weight_read = line[4:comment_start].strip(" \\trnb")
             weight_read = weight_read.split(" ")
             teki.append(Teki(read_tekibase(teki_read), strip_int(weight_read[0])))
@@ -265,7 +265,7 @@ def read_item(cave, start_index):
     start_index += 1
     for i, line in enumerate(cave[start_index:]):
         line = str(line)
-        comment_start = line.index("#") if "#" in line else -1
+        comment_start = line.find("#")
         treasure_read = line[4:comment_start].strip()
         treasure_read = treasure_read.split(" ")
         item.append(read_treasurebase(treasure_read))
@@ -286,7 +286,7 @@ def read_treasurebase(treasure_read):
 def read_gate(cave, start_index):
     start_index += 2
     gate_count = str(cave[start_index])
-    comment_start = gate_count.index("#") if "#" in gate_count else -1
+    comment_start = gate_count.find("#")
     gate_count = gate_count[4:comment_start].strip(" \\trnb")
     gate_count = int(gate_count)
 
@@ -298,11 +298,11 @@ def read_gate(cave, start_index):
     for i, line in enumerate(cave[start_index:]):
         line = str(line)
         if i % 2 == 0:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             gate_read = line[4:comment_start].strip()
             gate_read = gate_read.split(" ")
         else:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             weight_read = line[4:comment_start].strip(" \\trnb")
             gate.append(Gate(gate_read[0], float(gate_read[1].strip("\\rnt")), strip_int(weight_read[-1])))
         if i == gate_count * 2 - 1:
@@ -321,14 +321,14 @@ def read_cap(cave, start_index):
     for i, line in enumerate(cave[start_index:]):
         line = str(line)
         if i % 3 == 0:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             captype_read = line[4:comment_start].strip(" \\trnb")
         elif i % 3 == 1:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             cap_read = line[4:comment_start].strip()
             cap_read = cap_read.split(" ")
         else:
-            comment_start = line.index("#") if "#" in line else -1
+            comment_start = line.find("#")
             type_read = line[4:comment_start].strip(" \\trnb")
             cap.append(Cap(strip_int(captype_read), read_tekibase(cap_read), type_read == "1"))
         if i == cap_count * 3 - 1:
@@ -467,6 +467,4 @@ def export_cave(caveinfo:CaveInfo):
                 export_string.append(f"\t{int(cap.dont_dupe)} \t# type\n")
             export_string.append("}\n")
     return export_string
-        
-        
 
