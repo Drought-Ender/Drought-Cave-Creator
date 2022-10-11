@@ -216,18 +216,21 @@ def read_teki(cave, start_index):
             teki_read = teki_read.split(" ")
         else:
             comment_start = line.find("#")
-            weight_read = line[4:comment_start].strip(" \\trnb")
-            weight_read = weight_read.split(" ")
-            teki.append(Teki(read_tekibase(teki_read), strip_int(weight_read[0])))
+            spawn_read = line[4:comment_start].strip(" \\trnb")
+            spawn_read = spawn_read.split(" ")
+            teki.append(Teki(read_tekibase(teki_read, strip_int(spawn_read[0])), strip_int(spawn_read[0])))
         if i == teki_num * 2:
             return TekiInfo(teki_num, teki), pad_close(cave, start_index + i)
 
 
-def read_tekibase(tekistr):
+def read_tekibase(tekistr, spawn=0):
     num = tekistr[1].strip("\\rnt")
-    if len(str(num)) == 1:
-        fill = strip_int(str(num)[0])
+    if spawn == 6:
+        fill = strip_int(num)
         weight = 0
+    elif len(str(num)) == 1:
+        fill = 0
+        weight = strip_int(str(num)[0])
     else:
         fill = strip_int(str(num)[0:-1])
         weight = strip_int(num[-1])
@@ -430,8 +433,10 @@ def export_cave(caveinfo:CaveInfo):
                 break
             fall = f"${teki.teki.falltype}" if teki.teki.falltype > 0 else ""
             item = f"_{teki.teki.item}" if teki.teki.has_item else ""
-            print(teki.teki.name)
-            export_string.append(f"\t{fall}{teki.teki.name}{item} {teki.teki.fill}{teki.teki.weight} \t# weight\n")
+            weight = teki.teki.weight
+            if teki.spawn == 6:
+                weight = ""
+            export_string.append(f"\t{fall}{teki.teki.name}{item} {teki.teki.fill}{weight} \t# weight\n")
             export_string.append(f"\t{teki.spawn} \t# type\n")
 
         export_string.append("}\n")
