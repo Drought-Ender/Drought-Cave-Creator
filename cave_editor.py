@@ -443,7 +443,6 @@ class TekiWidget(QWidget):
             self.weight.show()
     
     def update_fallheld(self, index):
-        print(keys.teki_keys[index])
         if keys.settings.teki_dict[keys.teki_keys[index]]["fall"]:
             self.fall.show()
         else:

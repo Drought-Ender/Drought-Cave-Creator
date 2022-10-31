@@ -112,7 +112,6 @@ def read_cave(cave):
     start_index = 4
     try:
         for i in range(floor_num):
-            print(i)
             floorinfo, start_index = read_floor(cave, start_index)
             tekiinfo, start_index = read_teki(cave, start_index)
             iteminfo, start_index = read_item(cave, start_index)
@@ -122,7 +121,6 @@ def read_cave(cave):
                 capinfo, start_index = read_cap(cave, start_index)
                 floors[i].capinfo = capinfo
     except Exception as e:
-        (f"{e} while reading object at line {start_index}")
         raise BaseException(f"{e} while reading object at line {start_index}")
     return CaveInfo(floor_num, floors)
         
