@@ -3,7 +3,8 @@
 ## How to run
 
 1. Have Python installed
-2. Run `python3 main.py` in a command prompt
+2. Open command prompt type `python3 `and drag the `main.py` file into the prompt
+The python file will automatically adjust it's work directory to where it was run, so there is no worry about having to change directory.
 
 ## About
 
