@@ -1,7 +1,8 @@
-from PyQt6.QtWidgets import QMainWindow, QCheckBox, QPushButton, QLineEdit, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QMessageBox, QFileDialog
 import configparser
 import json
-from os.path import exists
+import os
+from PyQt6.QtWidgets import QMainWindow, QCheckBox, QPushButton, QLineEdit, QLabel, QWidget, QHBoxLayout, QVBoxLayout, QMessageBox, QFileDialog
+import file_reader
 
 class lineEditLable(QWidget):
     def __init__(self, parent, text, val):
@@ -65,9 +66,9 @@ class Settings:
         self.show_gate_name = False
         self.use_internal_names = False
         self.use_internal_groups = False
+        self.always_capinfo = True
+        self.autoteki = True
 
-        self.teki_text = False
-        self.item_text = False
         self.preset = "pikmin2"
         self.teki_dict = {}
         self.item_dict = {}
@@ -86,15 +87,15 @@ class Settings:
         self.show_gate_name = config["Display Settings"].getboolean("GateName")
         self.use_internal_names = config["Display Settings"].getboolean("UseInternalNames")
         self.use_internal_groups = config["Display Settings"].getboolean("UseInternalGroups")
-
-        self.teki_text = config["Behavior Settings"].getboolean("TekiIsText")
-        self.item_text = config["Behavior Settings"].getboolean("ItemIsText")
+        self.always_capinfo = config["Behavior Settings"].getboolean("Capinfo")
+        self.autoteki = config["Behavior Settings"].getboolean("autoTekiBox")
         self.preset = config["Behavior Settings"]["preset"]
 
     def init_preset_settings(self, preset=None):
+        
         if preset is None:
             preset = self.preset
-        if not exists(preset):
+        if not os.path.exists(f"./presets/{preset}"):
             preset = "pikmin2"
         self.preset = preset
         preset_config = configparser.ConfigParser()
@@ -122,43 +123,69 @@ class SettingsGUI(QMainWindow):
         self.useless.setChecked(settings.show_useless_teki)
         self.useless.move(30, 30)
         self.useless.setFixedSize(300, 20)
+        self.useless.setToolTip("Shows teki that dont spawn or crash")
         self.cap_type = QCheckBox("Show Captype Slider", self)
         self.cap_type.setChecked(settings.show_captype)
         self.cap_type.move(30, 50)
         self.cap_type.setFixedSize(300, 20)
+        self.cap_type.setToolTip("Shows the captype slider, which us usually useless")
         self.item_weight = QCheckBox("Show Item Weight Slider", self)
         self.item_weight.setChecked(settings.show_item_weight)
         self.item_weight.move(30, 70)
         self.item_weight.setFixedSize(300, 20)
+        self.item_weight.setToolTip("Shows the item weight, which should never be used")
         self.gate_name = QCheckBox("Show Gate Names", self)
         self.gate_name.setChecked(settings.show_gate_name)
         self.gate_name.move(30, 90)
         self.gate_name.setFixedSize(300, 20)
+        self.gate_name.setToolTip("Shows the gate name, which does nothing")
         self.internal_groups = QCheckBox("Show Interal Group Names", self)
         self.internal_groups.setChecked(settings.use_internal_groups)
         self.internal_groups.move(30, 110)
         self.internal_groups.setFixedSize(300, 20)
+        self.internal_groups.setToolTip("Displays the internal group names on the spawn type drop-down")
         self.internal_names = QCheckBox("Show Internal Names", self)
         self.internal_names.setChecked(settings.use_internal_names)
         self.internal_names.move(30, 130)
         self.internal_names.setFixedSize(300, 20)
-        self.teki_text = QCheckBox("Show Teki as text boxes", self)
-        self.teki_text.setChecked(settings.teki_text)
-        self.teki_text.move(30, 150)
-        self.teki_text.setFixedSize(300, 20)
+        self.internal_names.setToolTip("Uses the internal names for treasures and teki rather than their piklopeida names")
+        self.capinfo = QCheckBox("Always Enable Capinfo", self)
+        self.capinfo.setChecked(settings.always_capinfo)
+        self.capinfo.move(30, 150)
+        self.capinfo.setFixedSize(300, 20)
+        self.capinfo.setToolTip("Capinfo will allways be shown, hides the 'use capinfo' button")
+        self.autoteki = QCheckBox("Remove Useless Teki Options", self)
+        self.autoteki.setChecked(settings.autoteki)
+        self.autoteki.move(30, 170)
+        self.autoteki.setFixedSize(300, 20)
+        self.autoteki.setToolTip("Removes options that would do nothing in gameplay")
+
         self.save_button = QPushButton("Save Settings", self)
         self.save_button.pressed.connect(self.save)
         self.save_button.move(350, 300)
         self.save_button.setFixedSize(200, 50)
         self.preset = lineEditLable(self, "Preset in use:", settings.preset)
         self.preset.move(30, 250)
+        self.preset.setToolTip("Used with Cavegen and recomended to be copied")
         self.preset_settings = QPushButton("Open Preset Settings", self)
         self.preset_settings.setFixedSize(300, 50)
         self.preset_settings.move(30, 300)
         self.preset_settings.pressed.connect(self.open_preset)
+
+        self.update_cavegen = QPushButton("Update Cavgen Units (takes a while)", self)
+        self.update_cavegen.setFixedSize(300, 50)
+        self.update_cavegen.move(250, 25)
+        self.update_cavegen.pressed.connect(self.try_update)
+        self.update_cavegen.setToolTip("Update the units that CaveGen is using based on the current preset,\ncould take up to a minute or more")
+
         self.setGeometry(200, 200, 575, 375)
         self.setWindowTitle('Settings')
         self.show()
+    
+    def try_update(self):
+        if os.path.exists(f"./presets/{self.preset.val}"):
+            settings.init_preset_settings(self.preset.val)
+            file_reader.run_cavegen_setup()
     
     def save(self):
         show_useless_teki = self.useless.isChecked()
@@ -167,27 +194,31 @@ class SettingsGUI(QMainWindow):
         show_gate_name = self.gate_name.isChecked()
         use_internal_groups = self.internal_groups.isChecked()
         use_internal_names = self.internal_names.isChecked()
-        teki_text = self.teki_text.isChecked()
-        item_text = False
+        capinfo = self.capinfo.isChecked()
+        auto_teki = self.autoteki.isChecked()
+
         preset = self.preset.val
         config_write = configparser.ConfigParser()
-        config_write["Display Settings"] = {"HiddenTeki" : show_useless_teki,
-            "CapType" : show_captype, 
+        config_write["Display Settings"] = {
+            "HiddenTeki" : show_useless_teki,
+            "CapType" : show_captype,
             "ItemWeight" : show_item_weight,
             "GateName" : show_gate_name,
             "UseInternalNames" : use_internal_names,
             "UseInternalGroups" : use_internal_groups}
-        if exists(f"./presets/{preset}"):
-            config_write["Behavior Settings"] = {"TekiIsText" : teki_text, "ItemisText" : item_text, "preset" : self.preset.val}
-        else:
-            config_write["Behavior Settings"] = {"TekiIsText" : teki_text, "ItemisText" : item_text, "preset" : "pikmin2"}
+        if not os.path.exists(f"./presets/{preset}/"):
             QMessageBox.warning(self, "Error saving preset", f'Preset "{self.preset.val}" does not exist, defaulting to "pikmin2"')
+            self.preset.val = "pikmin2"
+        config_write["Behavior Settings"] = {
+                "Capinfo" : capinfo, "autoTekiBox" : auto_teki, "preset" : self.preset.val
+                }
         with open ("config.ini", "w") as f:
             config_write.write(f)
         settings.init_settings()
 
     def open_preset(self):
-        if exists(f"./presets/{self.preset.val}"):
+        settings.preset = self.preset.val
+        if os.path.exists(f"./presets/{self.preset.val}"):
             settings.init_preset_settings(self.preset.val)
             PresetGUI(self.preset.val)
         else:
@@ -196,6 +227,7 @@ class SettingsGUI(QMainWindow):
 class PresetGUI(QMainWindow):
     def __init__(self, preset):
         super().__init__()
+        settings.preset = preset
         settings.init_preset_settings(preset)
         self.connect_root = rootButton(self, "Set all from Root folder")
         self.connect_root.move(25, 220)
@@ -217,19 +249,19 @@ class PresetGUI(QMainWindow):
     
     def root(self, file):
         mapunits_folder = f"{file}/files/user/Mukki/mapunits/"
-        if exists(f"{mapunits_folder}caveinfo/"):
+        if os.path.exists(f"{mapunits_folder}caveinfo/"):
             self.cave_folder.edit.setText(f"{mapunits_folder}caveinfo/")
         else:
             QMessageBox.warning(self, "Folder not found", "Could not find caveinfo folder")
-        if exists(f"{mapunits_folder}units/"):
+        if os.path.exists(f"{mapunits_folder}units/"):
             self.units_folder.edit.setText(f"{mapunits_folder}units/")
         else:
             QMessageBox.warning(self, "Folder not found", "Could not find units folder")
-        if exists(f"{mapunits_folder}arc/"):
+        if os.path.exists(f"{mapunits_folder}arc/"):
             self.unit_folder.edit.setText(f"{mapunits_folder}arc/")
         else:
             QMessageBox.warning(self, "Folder not found", "Could not find arc folder")
-        if exists(f"{file}/files/user/Abe/cave/"):
+        if os.path.exists(f"{file}/files/user/Abe/cave/"):
             self.light_folder.edit.setText(f"{file}/files/user/Abe/cave/")
         else:
             QMessageBox.warning(self, "Folder not found", "Could not find light folder")
@@ -244,3 +276,4 @@ class PresetGUI(QMainWindow):
         with open (f"./presets/{settings.preset}/preset.ini", "w") as f:
             preset_write.write(f)
         settings.init_preset_settings()
+

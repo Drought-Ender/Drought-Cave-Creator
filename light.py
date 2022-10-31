@@ -101,7 +101,7 @@ def read_spotlight(light, start_index):
 
 def export_light(light:LightFile):
     export_string = [
-        "############################################### \n",
+        "### === Made with Drought's Cave Editor === ### \n",
         "#\n",
         "# Game Light Mgr Setting\n"
         "#\n",

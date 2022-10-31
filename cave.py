@@ -1,18 +1,8 @@
 import settings
 
-def strip_int(string:str):
-    try:
-        i = int(''.join(filter(str.isdigit, string)))
-    except:
-        raise BaseException(f"required value '{string}' is not an int")
-    return i
+strip_int = lambda x : int(''.join(filter(str.isdigit, x)))
 
-class CaveInfo:
-    def __init__(self, floor_count=0, floors=None):
-        if floors is None:
-            floors = []
-        self.floor_count = floor_count
-        self.floors = floors
+
 
 
 
@@ -38,15 +28,9 @@ class Floorinfo:
         self.timer = 0.0
         self.seesaw = False
 
-class TekiInfo:
-    def __init__(self, teki_count=0, tekis=None):
-        if tekis is None:
-            tekis = []
-        self.teki_count = teki_count
-        self.tekis = tekis
 
 class TekiBase:
-    def __init__(self, name="Chappy", fill=0, weight=0, falltype=0, has_item=False, item="ahiru"):
+    def __init__(self, name:str, fill:int, weight:int, falltype:int, has_item:bool, item:str):
         self.name = name
         self.has_item = has_item
         self.item = item
@@ -55,57 +39,63 @@ class TekiBase:
         self.falltype = falltype
 
 class Teki:
-    def __init__(self, teki=TekiBase(), spawn=0):
+    def __init__(self, teki:TekiBase, spawn:int):
         self.teki = teki
         self.spawn = spawn
 
+class TekiInfo:
+    def __init__(self, teki_count:int, tekis:list[Teki]):
+        self.teki_count = teki_count
+        self.tekis = tekis
+
 class Treasure:
-    def __init__(self, name="ahiru", fill=0, weight=0):
+    def __init__(self, name:str, fill:int, weight:int):
         self.name = name
         self.fill = fill
         self.weight = weight
 
 class ItemInfo:
-    def __init__(self, item_count=0, items=None):
-        if items is None:
-            items = []
+    def __init__(self, item_count:int, items:list[Treasure]):
         self.item_count = item_count
         self.items = items
 
 
 class Gate:
-    def __init__(self, name="gate", life=1000.0, weight=0):
+    def __init__(self, name:str, life:float, weight:int):
         self.name = name
         self.life = life
         self.weight = weight
 
 class GateInfo:
-    def __init__(self, gate_count=0, gates=None):
-        if gates is None:
-            gates = []
+    def __init__(self, gate_count:int, gates:list[Gate]):
         self.gate_count = gate_count
         self.gates = gates
 
 class Cap:
-    def __init__(self, cap_type=0, teki=TekiBase(), dont_dupe=True):
+    def __init__(self, cap_type:int, teki:TekiBase, dont_dupe:bool):
         self.cap_type = cap_type
         self.teki = teki
         self.dont_dupe = dont_dupe
 
 class CapInfo:
-    def __init__(self, cap_count=0, caps=None):
-        if caps is None:
-            caps = []
+    def __init__(self, cap_count:int, caps:list[Cap]):
         self.cap_count = cap_count
         self.caps = caps
 
+
+
 class Floor:
-    def __init__(self, floorinfo=Floorinfo(), tekiinfo=TekiInfo(), iteminfo=ItemInfo(), gateinfo=GateInfo()):
+    def __init__(self, floorinfo:Floorinfo, tekiinfo:TekiInfo, iteminfo:ItemInfo, gateinfo:GateInfo, capinfo=None):
         self.floorinfo = floorinfo
         self.tekiinfo = tekiinfo
         self.iteminfo = iteminfo
         self.gateinfo = gateinfo
-        self.capinfo = None
+        self.capinfo = capinfo
+
+class CaveInfo:
+    def __init__(self, floor_count:int, floors:list[Floor]):
+        self.floor_count = floor_count
+        self.floors = floors
 
 #
 
@@ -122,6 +112,7 @@ def read_cave(cave):
     start_index = 4
     try:
         for i in range(floor_num):
+            print(i)
             floorinfo, start_index = read_floor(cave, start_index)
             tekiinfo, start_index = read_teki(cave, start_index)
             iteminfo, start_index = read_item(cave, start_index)
@@ -131,6 +122,7 @@ def read_cave(cave):
                 capinfo, start_index = read_cap(cave, start_index)
                 floors[i].capinfo = capinfo
     except Exception as e:
+        (f"{e} while reading object at line {start_index}")
         raise BaseException(f"{e} while reading object at line {start_index}")
     return CaveInfo(floor_num, floors)
         
@@ -213,6 +205,8 @@ def read_teki(cave, start_index):
         if i % 2 == 0:
             comment_start = line.find("#")
             teki_read = line[4:comment_start].strip(" \\")
+            while "  " in teki_read:
+                teki_read = teki_read.replace("  ", " ")
             teki_read = teki_read.split(" ")
         else:
             comment_start = line.find("#")
@@ -270,6 +264,8 @@ def read_item(cave, start_index):
         line = str(line)
         comment_start = line.find("#")
         treasure_read = line[4:comment_start].strip()
+        while "  " in treasure_read:
+            treasure_read = treasure_read.replace("  ", " ")
         treasure_read = treasure_read.split(" ")
         item.append(read_treasurebase(treasure_read))
         if i == item_num - 1:
@@ -304,6 +300,8 @@ def read_gate(cave, start_index):
             comment_start = line.find("#")
             gate_read = line[4:comment_start].strip()
             gate_read = gate_read.split(" ")
+            while "  " in gate_read:
+                gate_read = gate_read.replace("  ", " ")
         else:
             comment_start = line.find("#")
             weight_read = line[4:comment_start].strip(" \\trnb")
@@ -329,6 +327,8 @@ def read_cap(cave, start_index):
         elif i % 3 == 1:
             comment_start = line.find("#")
             cap_read = line[4:comment_start].strip()
+            while "  " in cap_read:
+                cap_read = cap_read.replace("  ", " ")
             cap_read = cap_read.split(" ")
         else:
             comment_start = line.find("#")
@@ -384,9 +384,7 @@ def get_unread_floorinfo():
     return default_floor
 
 def get_default_floor():
-    default_floor = Floor(get_default_floorinfo(), TekiInfo(), ItemInfo(), GateInfo())
-    default_floor.capinfo = CapInfo()
-    return default_floor
+    return Floor(get_default_floorinfo(), TekiInfo(0, []), ItemInfo(0, []), GateInfo(0, []), CapInfo(0, []))
 
 DEFAULT_CAVEINFO = CaveInfo(1, [get_default_floor()])
 
@@ -403,6 +401,8 @@ def export_cave(caveinfo:CaveInfo):
             export_string.append(f"{caveinfo.floor_count} # FloorInfo\n")
         else:
             export_string.append("# FloorInfo\n")
+        if floor.floorinfo.skybox == "":
+            floor.floorinfo.skybox = "none"
         export_string += ["{\n",
         f"\t{{f000}} 4 {floor.floorinfo.floor_start} \t# Floor Start\n",
             f"\t{{f001}} 4 {floor.floorinfo.floor_end} \t# Floor End\n",

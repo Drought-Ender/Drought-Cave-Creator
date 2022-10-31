@@ -6,11 +6,10 @@ import os
 import pathlib
 import settings
 from PyQt6.QtWidgets import (
-    QMainWindow, QLineEdit, QLabel, QMessageBox, QVBoxLayout,
-    QGridLayout, QCheckBox, QScrollArea, QComboBox, QListView,
-    QHBoxLayout, QFileDialog, QWidget, QPushButton, QColorDialog,
-    QSpinBox, QDoubleSpinBox, QTabWidget, QGraphicsPixmapItem)
-from PyQt6.QtGui import QIcon, QAction, QColor, QPainter, QBrush, QPalette, QPixmap, QPen
+    QMainWindow, QLabel, QMessageBox, QGridLayout,
+    QFileDialog, QWidget, QPushButton, QColorDialog, QTabWidget)
+from PyQt6.QtGui import QIcon, QAction, QColor
+from extra_widgets import betterSpinBox, betterSpinBoxFloat, ColorBox
 
 
 
@@ -33,78 +32,7 @@ class Keys:
 
 keys = Keys()
 
-class betterSpinBox(QWidget):
-    def __init__(self, parent, text, min, max, default):
-        super(QWidget, self).__init__(parent)
-        self.layout = QHBoxLayout()
-        self.parent = parent
-        self.lab = QLabel(text, self)
-        self.slide = QSpinBox(self)
-        self.slide.setMinimum(min)
-        self.slide.setMaximum(max)
-        self.slide.setValue(default)
-        self.layout.addWidget(self.lab, 0)
-        self.layout.addWidget(self.slide, 0)
-        self.setLayout(self.layout)
 
-
-class betterSpinBoxFloat(QWidget):
-    def __init__(self, parent, text, min, max, default):
-        super(QWidget, self).__init__(parent)
-        self.parent = parent
-        self.layout = QHBoxLayout()
-        self.lab = QLabel(text, self)
-        self.slide = QDoubleSpinBox(self)
-        self.slide.setMinimum(min)
-        self.slide.setMaximum(max)
-        self.slide.setValue(default)
-        self.layout.addWidget(self.lab, 0)
-        self.layout.addWidget(self.slide, 0)
-        self.setLayout(self.layout)
-
-class ColorBox(QWidget):
-    def __init__(self, parent, color:QColor):
-        super(QWidget, self).__init__(parent)
-        self.color = color
-        self.layout = QHBoxLayout()
-        # convert image file into pixmap
-        self.pixmap_image = QPixmap("./Assets/AlphaGrad.png")
-
-        self.label = QLabel()
-
-        # create painter instance with pixmap
-        self.painterInstance = QPainter(self.pixmap_image)
-
-        # set rectangle color and thickness
-        self.brush = QBrush(self.color)
-
-        # draw rectangle on painter
-        self.painterInstance.setBrush(self.brush)
-        self.painterInstance.drawRect(0,0,100,100)
-        # set pixmap onto the label widget
-        self.painterInstance.end()
-        self.label.setPixmap(self.pixmap_image)
-        self.layout.addWidget(self.label)
-        self.setLayout(self.layout)
-        #self.painter = QPainter(self)
-        #self.painter.setBrush(QBrush(self.color))
-        #self.painter.drawRect(0, 0, 100, 100)
-    
-    def update_color(self, color:QColor):
-        self.color = color
-        self.pixmap_image = QPixmap("./Assets/AlphaGrad.png")
-        self.painterInstance = QPainter(self.pixmap_image)
-
-        # set rectangle color and thickness
-        self.brush = QBrush(self.color)
-        # draw rectangle on painter
-        self.painterInstance.setBrush(self.brush)
-        self.painterInstance.drawRect(0, 0, 100,100)
-        # set pixmap onto the label widget
-        self.painterInstance.end()
-        self.label.setPixmap(self.pixmap_image)
-        #self.painter.setBrush(QBrush(self.color))
-        #self.painter.drawRect(0, 0, 100, 100)
 
 class ColorSubWidget(QWidget):
     def __init__(self, parent, color:light.Colors):
@@ -134,7 +62,7 @@ class ColorSubWidget(QWidget):
         self.b.slide.setValue(color.blue)
         self.a.slide.setValue(color.alpha)
 
-    def color_change(self, val):
+    def color_change(self, _):
         self.color = light.Colors(self.r.slide.value(),
         self.g.slide.value(),
         self.b.slide.value(),
@@ -335,7 +263,7 @@ class LightTab(QMainWindow):
             light_file = QFileDialog.getSaveFileName(self, "Save Light as", keys.settings.light_path)[0]
             if not light_file.endswith(".ini"):
                 light_file += ".ini"
-        with open(light_file, 'w') as f:
+        with open(light_file, 'w',  encoding='utf-8') as f:
             f.writelines(light.export_light(self.light))
 
     def save_as_light(self):
@@ -343,7 +271,7 @@ class LightTab(QMainWindow):
         light_file = QFileDialog.getSaveFileName(self, "Save Light as", keys.settings.light_path)[0]
         if not light_file.endswith(".ini"):
             light_file += ".ini"
-        with open(light_file, 'w') as f:
+        with open(light_file, 'w',  encoding='utf-8') as f:
             f.writelines(light.export_light(self.light))
             self.light_dir = light_file
     
