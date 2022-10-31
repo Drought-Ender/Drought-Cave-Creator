@@ -1,5 +1,10 @@
 # Drought Ender's Cave Creator 
 
+## How to run
+
+1. Have Python installed
+2. Run `python3 main.py` in a command prompt
+
 ## About
 
 This is a cave creator designed around being geared to full game applications rather than challenge mode or CaveNet (which has not been reimplmented added, sorry).
