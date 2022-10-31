@@ -1,5 +1,30 @@
 # Drought Ender's Cave Creator 
 
+## About
+
+This is a cave creator designed around being geared to full game applications rather than challenge mode or CaveNet (which has not been reimplmented added, sorry).
+
+The main pros of using this over Jimble's are:
+
+1. Units file editor
+2. CaveGen integration
+3. More Non-Vanilla integrations, especially with modded enemies
+4. Less GUI abstraction
+
+Though I'd still recomend passing caves through Jimble's cave creator if you're looking to use CaveNet.
+
+### Special Thanks To
+- [Chemi/chemicalqq (mayabyte)](https://github.com/mayabyte) & [JHawk4 (JHaack4)](https://github.com/JHaack4/CaveGen) for [CaveGen](https://github.com/mayabyte/CaveGen)
+- [Yoshi2 (RenolY2)](https://github.com/RenolY2) for the simpiler [Yaz0/Rarc library](https://github.com/RenolY2/pikmin-tools/tree/master/lib)
+- [LagoLunatic](https://github.com/LagoLunatic) for the [wwlib](https://github.com/LagoLunatic/wwrando/tree/master/wwlib) library
+- [The Pikmin Technical Knowledge Base](https://pikmintkb.com/wiki/)
+
+### Planned Features:
+- 251 & New Year presets
+- Progress Bars
+
+If there is anything you would like to see added, let me know
+
 ## Presets & Preset Settings
 
 ### What is a preset folder?
@@ -107,7 +132,7 @@ It's recomended to select from root folder, but if you are using something like 
 **New Cave** will jump you straight into the editor with a completely blank cave.
 
 #### Load Backup
-**Load Backup** will route you to the _Backups_ folder, in which backed-up _.pickle_ files will be stored, clicking on one of them will load the backed-up cave.
+**Load Backup** will route you to the *Backups* folder, in which backed-up *.pickle* files will be stored, clicking on one of them will load the backed-up cave.
 
 ### Saving Current Cave
 
@@ -242,7 +267,7 @@ Using **Actions - > CaveInfo** or **Ctrl + I** will display the caveinfo, use th
 **New Units** will jump you straight into the editor with a completely blank unit file.
 
 #### Load Backup
-**Load Backup** will route you to the _Backups_ folder, in which backed-up _.pickle_ files will be stored, clicking on one of them will load the backed-up cave.
+**Load Backup** will route you to the *Backups* folder, in which backed-up *.pickle* files will be stored, clicking on one of them will load the backed-up cave.
 
 ### Saving Current Units
 
@@ -281,7 +306,7 @@ The unit's name will a button, clicking on it will reveal the unit's meta-data, 
 **New Light** will jump you straight into the editor with a completely blank lighting file.
 
 #### Load Backup
-**Load Backup** will route you to the _Backups_ folder, in which backed-up _.pickle_ files will be stored, clicking on one of them will load the backed-up cave.
+**Load Backup** will route you to the *Backups* folder, in which backed-up *.pickle* files will be stored, clicking on one of them will load the backed-up cave.
 
 ### Saving Current Lighting file
 
