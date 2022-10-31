@@ -15,8 +15,10 @@ this is a .json file containing every enemy, it is formated like this:
 ```
 {internal name (string) : 
 {"common" : common name (string), 
-"id" : piklopedia id (int), 
-"use" : show teki (bool) }
+"id" : internal id (int), 
+"use" : show teki (bool),
+"fall" : enemy can fall (bool),
+"item" : enemy can drop held item (bool)}
 }
 ```
 ##### item.json
@@ -34,12 +36,16 @@ this is a folder containing .pngs of each enemy listed in *teki.json*
 ##### itemIcons
 this is a folder containing .pngs of each treasure listed in *item.json*
 
+##### all_units.txt
+this is a large units.txt file containing every unit, used in the units editor
+
 ### Creating a new preset
 1. Copy the *pikmin2* preset and rename it to whatever you'd like
 2. Add any custom treasures' names into *item.json*
 3. Add any custom enemies' names into *teki.json*
-4. (optional) update *tekiIcons*
-5. (optional) update *itemIcons*
+4. Add any custom units into *all_units.txt*
+5. (optional) update *tekiIcons*
+6. (optional) update *itemIcons*
 
 you're now ready to use the preset for whatever mod you'd like
 
@@ -65,6 +71,31 @@ To set it up properly, simply click the **Set all from Root folder** button, and
 ##### Note:
 If you're using a file framework that restructures the locations and names of the folders, the **Set all from Root folder** button will fail to find the folders for each setting - if that is the case, you will have to path to the folders containing the items for each setting by hand.
 
+
+## Settings / Options
+
+### Update CaveGen units
+Updates the units that cavegen uses, this is a seperate option because of how slow it is, it may take a minute or two to complete, but is worth it from cavegen integration
+
+### Preset in use
+The preset folder that the game will draw from, if it does not exists it will default to pikmin2 please do not delete the pikmin2 folder.
+
+#### Preset Settings
+These are the folders that cavegen will pull from, as well as the default directory for opening files.
+
+It's recomended to select from root folder, but if you are using something like Neo-Reconstructed you will have to set the folders yourself.
+
+### Misc Settings
+- Show Useless Teki: Shows teki that do nothing/crash
+- Show CapType Slider: shows the editor for captype, if you changed its purpous
+- Show Item Weight Slider: Shows the slider from item weight, which is a horrible idea in general
+- Show Gate Names: Shows the names of gates, for if you made them do something
+- Show Internal group names: Uses *Teki A* or *Teki F* instead of *Easy* or *Special*
+- Show Internal Names: Uses internal names from the games files instead of the common names from the piklopedia/treasure hoard
+- Always Enable Capinfo: Makes the {f015} paramater allways 1, and disables the option to change it
+- Remove Useless Teki Options: Removes options that wouldn't do anything on some tekis.
+
+
 ## Cave Editor
 
 ### Accessing Caves
@@ -73,7 +104,7 @@ If you're using a file framework that restructures the locations and names of th
 **Open Cave** will route you to you're preset's caves folder, where you can select a cave file to load into the editor with.
 
 #### New Cave
-**New Cave** will jump you straight into the editor with a completely blank cave, where you can save your cave to a location immediantly
+**New Cave** will jump you straight into the editor with a completely blank cave.
 
 #### Load Backup
 **Load Backup** will route you to the _Backups_ folder, in which backed-up _.pickle_ files will be stored, clicking on one of them will load the backed-up cave.
@@ -187,12 +218,114 @@ You may notice that the capinfo section is missing, that is because it has been 
 - Add Cap Teki: Adds another cap enemy to CapInfo
 - Remove Cap Teki: Removes the bottom-most enemy
 
+### Using CaveGen
+
+#### Requirements:
+- Have Java installed
+- Make sure the units in cavegen are updated (in settings)
+- Make sure your preset has all the directories
+- Make sure all your settings are correct missing hallway units will cause cavegen to crash
+
+#### Using CaveGen
+Using **Actions -> CaveGen** or **Ctrl + G** will generate an example layout and show you the seed, use this to "playtest" your cave levels quickly
+
+#### Using Cavinfo
+Using **Actions - > CaveInfo** or **Ctrl + I** will display the caveinfo, use this to preview the units and their spawnpoints
+
 ## Units Editor
-This feature is planned, but has not been implemented yet
+### Accessing Units
+
+#### Open Units
+**Open Units** will route you to you're preset's units folder, where you can select a units file to load into the editor with.
+
+#### New Units
+**New Units** will jump you straight into the editor with a completely blank unit file.
+
+#### Load Backup
+**Load Backup** will route you to the _Backups_ folder, in which backed-up _.pickle_ files will be stored, clicking on one of them will load the backed-up cave.
+
+### Saving Current Units
+
+#### Save As
+
+To save the current units to a new location, select **File -> Save As** or use **Ctrl + Shift + S**, this will open a dialoge to save the file the a desired location.
+
+#### Save
+
+To save the units file, select **File -> Save** or use **Ctrl + S**, this will overwrite the file that is saved over, so be careful.
+
+#### Backup
+
+To backup to the backups folder, selected **File -> Backup** or use **Ctrl + B**, this will create a *.pickle* backup that can be easily loaded.
+##### Note:
+pickling is not a secure method of storage, do not accept *.pickle* files from people you do not trust.
+
+### Reading the GUI
+
+#### Adding a unit
+
+At the bottom of the screen there is a dropdown containing every unit defined in all_units.txt within the preset
+
+#### Editing a unit
+
+The unit's name will a button, clicking on it will reveal the unit's meta-data, the meta-data is unique to the file.
 
 ## Lighting Editor
-Instructions comming soon
 
-## Unit Layout Editor
-This feature is planned, but has not been implemented yet, this will not be added on release
+### Accessing Units
+
+#### Open Lighting
+**Open Light** will route you to you're preset's light folder, where you can select a light file to load into the editor with.
+
+#### New Units
+**New Light** will jump you straight into the editor with a completely blank lighting file.
+
+#### Load Backup
+**Load Backup** will route you to the _Backups_ folder, in which backed-up _.pickle_ files will be stored, clicking on one of them will load the backed-up cave.
+
+### Saving Current Lighting file
+
+#### Save As
+
+To save the current light to a new location, select **File -> Save As** or use **Ctrl + Shift + S**, this will open a dialoge to save the file the a desired location.
+
+#### Save
+
+To save the units file, select **File -> Save** or use **Ctrl + S**, this will overwrite the file that is saved over, so be careful.
+
+#### Backup
+
+To backup to the backups folder, selected **File -> Backup** or use **Ctrl + B**, this will create a *.pickle* backup that can be easily loaded.
+##### Note:
+pickling is not a secure method of storage, do not accept *.pickle* files from people you do not trust.
+
+
+
+### Reading the GUI
+
+#### No Orb vs. Stellar Orb
+Self explanitory, no orb is used when the player doesn't have stellar orb, stellar orb lighting is used when the player has orb.
+
+#### Distance From Light
+Self explanitory, this is the distance from the light source, the lower the value - the strong the light
+
+#### Main light
+This is the main color that starts from the player.
+
+#### Sub light
+This is the secondary color that is more noticible in the outer section of the player
+
+#### Specular Light
+This is the specular light of the lighting file
+
+#### Ambient Light
+This is the ambient light of the lighting file
+
+#### Fog
+The fog color and distance
+
+#### Shadows
+This is the shadows of enemies
+
+
 
