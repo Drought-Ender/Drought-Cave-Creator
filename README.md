@@ -3,7 +3,7 @@
 ## How to run
 
 1. Have Python installed
-2. Make sure PySide6, PyYAML, Pillow, and appdirs are installed (pip install \<library\>)
+2. Make sure PySide6, PyYAML, Pillow, and appdirs are installed (`pip install <library>` in a command prompt if they are not)
 3. Open command prompt type `python3` and drag the `main.py` file into the prompt.
 
 The python file will automatically adjust it's work directory to where it was run, so there is no worry about having to change directory.
