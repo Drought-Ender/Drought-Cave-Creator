@@ -23,3 +23,6 @@ Key:
 -- Ver 0.1.1 --
 ! Fixed a bug where adding a cap teki crashed the cave editor
 = Made a caveat for plants as they ignore weight - not reflected the gui
+
+-- Ver 1.0.0 --
+= Full release
