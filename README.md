@@ -120,7 +120,7 @@ It's recomended to select from root folder, but if you are using something like 
 
 ### Misc Settings
 - Show Useless Teki: Shows teki that do nothing/crash
-- Show CapType Slider: shows the editor for captype, if you changed its purpous
+- Show CapType Slider: shows the editor for captype, if you changed its purpose
 - Show Item Weight Slider: Shows the slider from item weight, which is a horrible idea in general
 - Show Gate Names: Shows the names of gates, for if you made them do something
 - Show Internal group names: Uses *Teki A* or *Teki F* instead of *Easy* or *Special*
