@@ -850,8 +850,10 @@ class CaveTab(QMainWindow):
     def save_backup(self):
         self.caveinfo = self.FloorTabs.update_contents()
         this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/Cave/"
+        now = str(datetime.datetime.now())
+        now = now.replace(":", "_")
         try:
-            with open(os.path.join(this, f"{datetime.datetime.now()}.pickle"), "wb+") as f:
+            with open(os.path.join(this, f"{now}.pickle"), "wb+") as f:
                 pickle.dump(self.caveinfo, f)
         except FileNotFoundError:
             QMessageBox.critical(self, "Error saving backup", "Unable to save backup; backups folder is missing")
