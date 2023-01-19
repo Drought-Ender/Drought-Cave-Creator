@@ -7,7 +7,7 @@ from pathlib import Path
 if __name__ == "__main__":
     chdir(f"{pathlib.Path(__file__).parent.resolve()}")
 
-import cave, light, units
+import CaveLibrary.cave as cave, light, units
 from PyQt6.QtWidgets import (QMainWindow, QFileDialog, QApplication, QPushButton, QMessageBox, QLabel, QWidget, QHBoxLayout)
 from PyQt6.QtGui import QPixmap
 
@@ -94,12 +94,12 @@ class Main(QMainWindow):
                 except BaseException as e:
                     QMessageBox.critical(self, "Error reading cave", f"Error Reading Cave: {e}")
                 else:
-                    self.show_dialog = cave_editor.CaveTab(self.caveinfo, cave_file[0])
+                    self.show_dialog = CaveLibrary.cave_editor.CaveTab(self.caveinfo, cave_file[0])
 
 
     def new_cave(self):
         self.caveinfo = cave.CaveInfo(1, [cave.get_default_floor()])
-        self.show_dialog = cave_editor.CaveTab(self.caveinfo, "")
+        self.show_dialog = CaveLibrary.cave_editor.CaveTab(self.caveinfo, "")
 
     def load_cave(self):
         this = f"{pathlib.Path(__file__).parent.resolve()}/Backups/Cave/"
@@ -108,7 +108,7 @@ class Main(QMainWindow):
             with open(pickel_file[0], 'rb') as f:
                 try:
                     self.caveinfo = pickle.load(f)
-                    self.show_dialog = cave_editor.CaveTab(self.caveinfo, "")
+                    self.show_dialog = CaveLibrary.cave_editor.CaveTab(self.caveinfo, "")
                 except:
                     QMessageBox.critical(self, "Error reading cave", "Cave Backup is corrupt")
 
@@ -174,6 +174,6 @@ class Main(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    import cave_editor, settings, light_editor, units_editor
+    import CaveLibrary.cave_editor as cave_editor, settings, light_editor, units_editor
     ex = Main()
     sys.exit(app.exec())
