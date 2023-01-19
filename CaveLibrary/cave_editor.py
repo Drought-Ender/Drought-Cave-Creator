@@ -5,7 +5,7 @@ import pickle
 import copy
 import datetime
 import settings
-import cave
+import CaveLibrary.cave as cave
 import CaveGenLinker
 from PyQt6.QtWidgets import (
     QMainWindow, QLineEdit, QLabel, QMessageBox, QVBoxLayout, QGridLayout, QCheckBox, 

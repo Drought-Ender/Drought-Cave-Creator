@@ -2,10 +2,6 @@ import settings
 
 strip_int = lambda x : int(''.join(filter(str.isdigit, x)))
 
-
-
-
-
 class Floorinfo:
     def __init__(self):
         self.floor_start = None
