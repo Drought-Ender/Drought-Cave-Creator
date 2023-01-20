@@ -1,7 +1,7 @@
 import copy
 import pickle
 import datetime
-import units
+import UnitsLibrary.units as units
 import os
 import pathlib
 import settings
@@ -31,11 +31,11 @@ class Keys:
 
         self.teki_keys = [teki for teki in self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
         if  self.settings.use_internal_names:
-            self.all_teki = [(QIcon(f"presets/{ self.settings.preset}/tekiIcons/{teki}.png"), teki) for teki in  self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
-            self.all_item = [(QIcon(f"presets/{ self.settings.preset}/itemIcons/{item}.png"), item) for item in  self.settings.item_dict]
+            self.all_teki = [(QIcon(f"presets/{self.settings.preset}/tekiIcons/{teki}.png"), teki) for teki in  self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
+            self.all_item = [(QIcon(f"presets/{self.settings.preset}/itemIcons/{item}.png"), item) for item in  self.settings.item_dict]
         else:
-            self.all_teki = [(QIcon(f"presets/{ self.settings.preset}/tekiIcons/{teki}.png"),  self.settings.teki_dict[teki]["common"]) for teki in  self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
-            self.all_item = [(QIcon(f"presets/{ self.settings.preset}/itemIcons/{item}.png"),  self.settings.item_dict[item]) for item in  self.settings.item_dict]
+            self.all_teki = [(QIcon(f"presets/{self.settings.preset}/tekiIcons/{teki}.png"),  self.settings.teki_dict[teki]["common"]) for teki in  self.settings.teki_dict if  self.settings.show_useless_teki or  self.settings.teki_dict[teki]["use"]]
+            self.all_item = [(QIcon(f"presets/{self.settings.preset}/itemIcons/{item}.png"),  self.settings.item_dict[item]) for item in  self.settings.item_dict]
             
 
 keys = Keys()

@@ -8,7 +8,8 @@ if __name__ == "__main__":
     chdir(f"{pathlib.Path(__file__).parent.resolve()}")
 
 import CaveLibrary.cave as cave
-import light, units
+import UnitsLibrary.units as units
+import LightLibrary.light as light
 from PyQt6.QtWidgets import (QMainWindow, QFileDialog, QApplication, QPushButton, QMessageBox, QLabel, QWidget, QHBoxLayout)
 from PyQt6.QtGui import QPixmap
 
@@ -175,6 +176,9 @@ class Main(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    import CaveLibrary.cave_editor as cave_editor, settings, light_editor, units_editor
+    import LightLibrary.light_editor as light_editor
+    import CaveLibrary.cave_editor   as cave_editor
+    import UnitsLibrary.units_editor as units_editor
+    import settings
     ex = Main()
     sys.exit(app.exec())

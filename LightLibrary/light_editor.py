@@ -1,7 +1,7 @@
 import copy
 import pickle
 import datetime
-import light
+import LightLibrary.light as light
 import os
 import pathlib
 import settings
