@@ -1,5 +1,5 @@
 import shutil, os
-import cave, settings
+import CaveLibrary.cave as cave, settings
 
 this_dir = os.getcwd()
 
