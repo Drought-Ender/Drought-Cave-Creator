@@ -28,15 +28,15 @@ class Main(QMainWindow):
 
     def __init__(self):
         self.caveinfo = cave.DEFAULT_CAVEINFO
-        self.light = light.DEFAULT_LIGHT
-        self.units = units.DEFAULT_UNITS
+        self.light    = light.DEFAULT_LIGHT
+        self.units    = units.DEFAULT_UNITS
         super().__init__()
         self.home_dir = str(pathlib.Path.home())
 
         logo = Image(self, "./Assets/logo.png")
 
-        # version = QLabel("ver 1.0.0", self)
-        # version.move(10, 440)
+        version = QLabel("ver 1.1.0", self)
+        version.move(10, 440)
 
         open_cave = QPushButton("Open Cave", self)
         open_cave.move(230, 250)
@@ -46,7 +46,7 @@ class Main(QMainWindow):
         new_cave.move(230, 275)
         new_cave.clicked.connect(self.new_cave)
 
-        load_cave = QPushButton(" Backup Cave", self)
+        load_cave = QPushButton("Backup Cave", self)
         load_cave.move(230, 300)
         load_cave.clicked.connect(self.load_cave)
 

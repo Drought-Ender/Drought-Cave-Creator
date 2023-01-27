@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QWidget, QHBoxLayout, QLabel, QLineEdit, QDoubleSpinBox, QSpinBox, QVBoxLayout, 
-    QPushButton, QFileDialog)
+    QPushButton, QFileDialog, QComboBox, QListView)
 from PyQt6.QtGui import QColor, QPixmap, QPainter, QBrush
 
 class lineEditLable(QWidget):
@@ -138,3 +138,15 @@ class ColorBox(QWidget):
         self.label.setPixmap(self.pixmap_image)
         #self.painter.setBrush(QBrush(self.color))
         #self.painter.drawRect(0, 0, 100, 100)
+
+
+class DefaultInfoMenu(QComboBox):
+    def __init__(self, parent, items, index):
+        super(QComboBox, self).__init__(parent)
+        for args in items:
+            self.addItem(*args)
+        self.setCurrentIndex(index)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.resize(self.sizeHint())
+        self.setView(QListView())

@@ -34,15 +34,28 @@ class TekiBase:
         self.weight = weight
         self.falltype = falltype
 
-class Teki:
-    def __init__(self, teki:TekiBase, spawn:int):
-        self.teki = teki
+    def get_weight(self) -> int:
+        return self.weight
+    
+    def get_fill(self) -> int:
+        return self.fill
+
+class Teki(TekiBase):
+    def __init__(self, name:str, fill:int, weight:int, falltype:int, has_item:bool, item:str, spawn:int):
+        super().__init__(name, fill, weight, falltype, has_item, item)
         self.spawn = spawn
+    
+    
+        
 
 class TekiInfo:
     def __init__(self, teki_count:int, tekis:list[Teki]):
         self.teki_count = teki_count
         self.tekis = tekis
+    
+    def get_objs(self) -> list[Teki]:
+        return self.tekis
+
 
 class Treasure:
     def __init__(self, name:str, fill:int, weight:int):
@@ -50,10 +63,20 @@ class Treasure:
         self.fill = fill
         self.weight = weight
 
+    def get_weight(self) -> int:
+        return self.weight
+
+    def get_fill(self) -> int:
+        return self.fill
+
+
 class ItemInfo:
     def __init__(self, item_count:int, items:list[Treasure]):
         self.item_count = item_count
         self.items = items
+    
+    def get_objs(self) -> list[Treasure]:
+        return self.items
 
 
 class Gate:
@@ -62,21 +85,33 @@ class Gate:
         self.life = life
         self.weight = weight
 
+    def get_weight(self) -> int:
+        return self.weight
+
+    def get_fill(self) -> int:
+        return 0
+
 class GateInfo:
     def __init__(self, gate_count:int, gates:list[Gate]):
         self.gate_count = gate_count
         self.gates = gates
 
-class Cap:
-    def __init__(self, cap_type:int, teki:TekiBase, dont_dupe:bool):
+    def get_objs(self) -> list[Gate]:
+        return self.gates
+
+class Cap(TekiBase):
+    def __init__(self, cap_type:int, name:str, fill:int, weight:int, falltype:int, has_item:bool, item:str, dont_dupe:bool):
         self.cap_type = cap_type
-        self.teki = teki
+        super().__init__(name, fill, weight, falltype, has_item, item)
         self.dont_dupe = dont_dupe
 
 class CapInfo:
     def __init__(self, cap_count:int, caps:list[Cap]):
         self.cap_count = cap_count
         self.caps = caps
+
+    def get_objs(self) -> list[Cap]:
+        return self.caps
 
 
 
@@ -385,6 +420,8 @@ DEFAULT_CAVEINFO = CaveInfo(1, [get_default_floor()])
 def export_cave(caveinfo:CaveInfo):
     export_string = ["# Caveinfo - Made with Drought Ender's Cave Creator\n"]
     export_string.append("{\n")
+    print(caveinfo.floor_count)
+    print(len(caveinfo.floors))
     export_string.append(f"\t{{c000}} 4 {caveinfo.floor_count} \t# Floor Count\n")
     export_string.append("\t{_eof} \n")
     export_string.append("}\n")
@@ -398,7 +435,7 @@ def export_cave(caveinfo:CaveInfo):
         if floor.floorinfo.skybox == "":
             floor.floorinfo.skybox = "none"
         export_string += ["{\n",
-        f"\t{{f000}} 4 {floor.floorinfo.floor_start} \t# Floor Start\n",
+            f"\t{{f000}} 4 {floor.floorinfo.floor_start} \t# Floor Start\n",
             f"\t{{f001}} 4 {floor.floorinfo.floor_end} \t# Floor End\n",
             f"\t{{f002}} 4 {floor.floorinfo.teki_num} \t# Teki Spawns\n",
             f"\t{{f003}} 4 {floor.floorinfo.item_num} \t# Treasure Spawns\n",
@@ -407,9 +444,9 @@ def export_cave(caveinfo:CaveInfo):
             f"\t{{f005}} 4 {floor.floorinfo.room_num} \t# Rooms Placed\n",
             f"\t{{f006}} 4 {floor.floorinfo.corridor_chance:.6f} \t# Corridor Chance\n",
             f"\t{{f007}} 4 {int(floor.floorinfo.geyser)} \t# Place Geyser\n",
-            f"\t{{f008}} 4 {floor.floorinfo.unit_file} \t# Units File\n",
-            f"\t{{f009}} 4 {floor.floorinfo.lighting_file} \t# Lighting File\n",
-            f"\t{{f00A}} 4 {floor.floorinfo.skybox} \t# Skybox\n",
+            f"\t{{f008}} -1 {floor.floorinfo.unit_file} \t# Units File\n",
+            f"\t{{f009}} -1 {floor.floorinfo.lighting_file} \t# Lighting File\n",
+            f"\t{{f00A}} -1 {floor.floorinfo.skybox} \t# Skybox\n",
             f"\t{{f010}} 4 {int(floor.floorinfo.is_clogged)} \t# Clog Hole\n",
             f"\t{{f011}} 4 {floor.floorinfo.echo} \t# Echo Strength\n",
             f"\t{{f012}} 4 {floor.floorinfo.music} \t# Music Type\n",
@@ -425,12 +462,12 @@ def export_cave(caveinfo:CaveInfo):
         for t, teki in enumerate(floor.tekiinfo.tekis):
             if t == floor.tekiinfo.teki_count:
                 break
-            fall = f"${teki.teki.falltype}" if teki.teki.falltype > 0 else ""
-            item = f"_{teki.teki.item}" if teki.teki.has_item else ""
-            weight = teki.teki.weight
+            fall = f"${teki.falltype}" if teki.falltype > 0 else ""
+            item = f"_{teki.item}" if teki.has_item else ""
+            weight = teki.weight
             if teki.spawn == 6:
                 weight = ""
-            export_string.append(f"\t{fall}{teki.teki.name}{item} {teki.teki.fill}{weight} \t# weight\n")
+            export_string.append(f"\t{fall}{teki.name}{item} {teki.fill}{weight} \t# weight\n")
             export_string.append(f"\t{teki.spawn} \t# type\n")
 
         export_string.append("}\n")
@@ -459,10 +496,10 @@ def export_cave(caveinfo:CaveInfo):
             for t, cap in enumerate(floor.capinfo.caps):
                 if t == floor.capinfo.cap_count:
                     break
-                fall = f"${cap.teki.falltype}" if cap.teki.falltype > 0 else ""
-                item = f"_{cap.teki.item}" if cap.teki.has_item else ""
+                fall = f"${cap.falltype}" if cap.falltype > 0 else ""
+                item = f"_{cap.item}" if cap.has_item else ""
                 export_string.append(f"\t{cap.cap_type} \t# captype\n")
-                export_string.append(f"\t{fall}{cap.teki.name}{item} {cap.teki.fill}{cap.teki.weight} \t# weight\n")
+                export_string.append(f"\t{fall}{cap.name}{item} {cap.fill}{cap.weight} \t# weight\n")
                 export_string.append(f"\t{int(cap.dont_dupe)} \t# type\n")
             export_string.append("}\n")
     return export_string

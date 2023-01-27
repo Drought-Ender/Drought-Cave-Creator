@@ -5,13 +5,15 @@ import pickle
 import copy
 import datetime
 import settings
+from CaveLibrary.cave_optimiser import optimise_cave
 import CaveLibrary.cave as cave
 import CaveGenLinker
 from PyQt6.QtWidgets import (
     QMainWindow, QLineEdit, QLabel, QMessageBox, QVBoxLayout, QGridLayout, QCheckBox, 
     QScrollArea, QComboBox, QListView, QHBoxLayout, QFileDialog, QWidget, QPushButton,
-    QSpinBox, QDoubleSpinBox, QTabWidget, QDialog)
-from PyQt6.QtGui import QIcon, QAction, QPixmap
+    QSpinBox, QDoubleSpinBox, QTabWidget, QDialog, QTabBar, QInputDialog)
+from PyQt6.QtGui import QIcon, QAction, QPixmap, QMouseEvent, QDrag, QDragEnterEvent, QDragLeaveEvent, QDropEvent
+from PyQt6.QtCore import Qt, QMimeData
 from extra_widgets import betterSpinBox, betterSpinBoxFloat, AddSubButtons, lineEditLable, directoryButton
 
 
@@ -182,21 +184,23 @@ class GateInfoBox(QScrollArea):
 class TekiInfoBox(QScrollArea):
     def __init__(self, parent, tekiinfo):
         super(QWidget, self).__init__(parent)
+        self.dragWidget = None
+        self.setAcceptDrops(True)
         self.this_widget = QWidget()
         self.name = QLabel("TekiInfo")
         self.name.setToolTip("Decides how the enemies on the floor are spawned")
         self.tekiinfo = tekiinfo
-        self.layout = QVBoxLayout(self.this_widget)
-        self.layout.addWidget(self.name)
+        self.vlayout = QVBoxLayout(self.this_widget)
+        self.vlayout.addWidget(self.name)
         self.tekis = []
         for i, teki in enumerate(self.tekiinfo.tekis):
             if i < self.tekiinfo.teki_count:
                 self.tekis.append(TekiWidget(self, teki))
-                self.layout.addWidget(self.tekis[-1])
+                self.vlayout.addWidget(self.tekis[-1])
 
         self.buttons = AddSubButtons(self)
         self.buttons.check_disable(len(self.tekiinfo.tekis))
-        self.layout.addWidget(self.buttons)
+        self.vlayout.addWidget(self.buttons)
         self.setWidget(self.this_widget)
 
 
@@ -205,67 +209,105 @@ class TekiInfoBox(QScrollArea):
     def update_teki(self):
         self.tekiinfo = cave.TekiInfo(0, [])
         for teki in self.this_widget.children():
-            new_teki = cave.Teki(cave.TekiBase("Chappy", 0, 0, 0, False, "ahiru"), 0)
+            new_teki = cave.Teki("Chappy", 1, 0, 0, False, "ahiru", 0)
             if not isinstance(teki, TekiWidget):
                 continue
-            new_teki.teki.name = keys.teki_keys[teki.tekicombo.currentIndex()]
+            new_teki.name = keys.teki_keys[teki.tekicombo.currentIndex()]
             if teki.itemcombo.currentIndex() == 0:
-                new_teki.teki.item = list(keys.settings.item_dict.keys())[0]
-                new_teki.teki.has_item = False
+                new_teki.item = list(keys.settings.item_dict.keys())[0]
+                new_teki.has_item = False
             else:
-                new_teki.teki.item = list(keys.settings.item_dict.keys())[teki.itemcombo.currentIndex() - 1]
-                new_teki.teki.has_item = True
-            new_teki.teki.falltype = teki.fall.currentIndex()
-            new_teki.teki.fill = teki.spawn_count.value()
-            new_teki.teki.weight = teki.weight.value()
+                new_teki.item = list(keys.settings.item_dict.keys())[teki.itemcombo.currentIndex() - 1]
+                new_teki.has_item = True
+            new_teki.falltype = teki.fall.currentIndex()
+            new_teki.fill = teki.spawn_count.value()
+            new_teki.weight = teki.weight.value()
             new_teki.spawn = teki.spawn.currentIndex()
             self.tekiinfo.tekis.append(copy.deepcopy(new_teki))
         self.tekiinfo.teki_count = len(self.tekiinfo.tekis)
         return self.tekiinfo
 
     def add_obj(self):
-        self.tekiinfo.tekis.append(cave.Teki(cave.TekiBase("Chappy", 0, 0, 0, False, "ahiru"), 0))
-        new_widget = TekiWidget(self, cave.Teki(cave.TekiBase("Chappy", 0, 0, 0, False, "ahiru"), 0))
+        self.tekiinfo.tekis.append(cave.Teki("Chappy", 0, 0, 0, False, "ahiru", 0))
+        new_widget = TekiWidget(self, cave.Teki("Chappy", 0, 0, 0, False, "ahiru", 0))
         self.tekis += [new_widget]
-        self.layout.insertWidget(len(self.tekis), new_widget)
+        self.vlayout.insertWidget(len(self.tekis), new_widget)
         self.buttons.check_disable(len(self.tekiinfo.tekis))
     
     def sub_obj(self):
         self.tekiinfo.tekis.pop()
         remove = self.tekis.pop()
-        self.layout.removeWidget(remove)
+        self.vlayout.removeWidget(remove)
         self.buttons.check_disable(len(self.tekiinfo.tekis))
+        
+    def dragEnterEvent(self, drag: QDragEnterEvent) -> None:
+        self.dragWidget = drag.source()
+        self.dragWidget.hide()
+        drag.accept()
+
+    def dragLeaveEvent(self, _) -> None:
+        self.dragWidget.show()
+
+
+    def dropEvent(self, drop: QDropEvent) -> None:
+        pos = drop.position()
+        widget:QWidget = drop.source()
+        widget.show()
+        widgetIdx = self.vlayout.indexOf(widget) - 1
+        print(f"{pos.y()}")
+        widgets = (
+            (n, self.vlayout.itemAt(n).widget()) for n in range(self.vlayout.count()) 
+            if isinstance(self.vlayout.itemAt(n).widget(), TekiWidget)
+        )
+        for trueIdx, bunch in enumerate(widgets):
+            i, w = bunch
+            if w == widget:
+                continue
+            if pos.y() < (w.y() + w.size().height() // 2):
+                break
+        
+        self.vlayout.insertWidget(i, widget)
+        
+        self.tekis[trueIdx], self.tekis[widgetIdx] = self.tekis[widgetIdx], self.tekis[trueIdx]
+
+
+
+
+        
+            
+            
+            
+        
 
 class CapWidget(QWidget):
-    def __init__(self, parent, cap):
+    def __init__(self, parent, cap:cave.Cap):
         super(QWidget, self).__init__(parent)
         self.layout = QGridLayout()
         self.cap = cap
-        self.teki_base_obj = self.cap.teki
-        name = self.teki_base_obj.name
+        name = self.cap.name
         self.index = keys.teki_keys.index(name)
         self.tekicombo = DefaultInfoMenu(self, keys.all_teki, self.index)
         if keys.settings.autoteki:
             self.tekicombo.currentIndexChanged.connect(self.update_fallheld)
         self.tekicombo.setToolTip("The name of the teki being spawned")
         self.spawn_count = QSpinBox()
-        self.spawn_count.setValue(self.teki_base_obj.fill)
+        self.spawn_count.setValue(self.cap.fill)
         self.spawn_count.setToolTip("Spawn Num")
         
         self.weight = QSpinBox()
-        self.weight.setValue(self.teki_base_obj.weight)
+        self.weight.setValue(self.cap.weight)
         self.weight.setMaximum(9)
         self.weight.setToolTip("Weight")
         self.fall = QComboBox()
         self.fall.addItems(["None", "All", "Pikmin", "Captain", "Carry", "Purple"])
-        self.fall.setCurrentIndex(self.teki_base_obj.falltype)
+        self.fall.setCurrentIndex(self.cap.falltype)
         self.fall.setToolTip("Fall Activation")
-        if self.teki_base_obj.item in list(keys.settings.item_dict.keys()):
-            self.item_index = list(keys.settings.item_dict.keys()).index(self.teki_base_obj.item)
+        if self.cap.item in list(keys.settings.item_dict.keys()):
+            self.item_index = list(keys.settings.item_dict.keys()).index(self.cap.item)
         else:
             self.item_index = 0
         item_with_none = [(QIcon(f"presets/{keys.settings.preset}/itemIcons/None.png"), "None")] + keys.all_item
-        if (self.teki_base_obj.has_item):
+        if (self.cap.has_item):
             self.itemcombo = DefaultInfoMenu(self, item_with_none, self.item_index + 1)
         else:
             self.itemcombo = DefaultInfoMenu(self, item_with_none, 0)
@@ -348,19 +390,19 @@ class CapInfoBox(QScrollArea):
     def update_cap(self):
         self.capinfo = cave.CapInfo(0, [])
         for cap in self.this_widget.children():
-            new_cap = cave.Cap(0, cave.TekiBase("Chappy", 0, 0, 0, False, "ahiru"), True)
+            new_cap = cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True)
             if not isinstance(cap, CapWidget):
                 continue
-            new_cap.teki.name = keys.teki_keys[cap.tekicombo.currentIndex()]
+            new_cap.name = keys.teki_keys[cap.tekicombo.currentIndex()]
             if cap.itemcombo.currentIndex() == 0:
-                new_cap.teki.item = list(keys.settings.item_dict.keys())[0]
-                new_cap.teki.has_item = False
+                new_cap.item = list(keys.settings.item_dict.keys())[0]
+                new_cap.has_item = False
             else:
-                new_cap.teki.item = list(keys.settings.item_dict.keys())[cap.itemcombo.currentIndex() - 1]
-                new_cap.teki.has_item = True
-            new_cap.teki.falltype = cap.fall.currentIndex()
-            new_cap.teki.fill = cap.spawn_count.value()
-            new_cap.teki.weight = cap.weight.value()
+                new_cap.item = list(keys.settings.item_dict.keys())[cap.itemcombo.currentIndex() - 1]
+                new_cap.has_item = True
+            new_cap.falltype = cap.fall.currentIndex()
+            new_cap.fill = cap.spawn_count.value()
+            new_cap.weight = cap.weight.value()
             new_cap.dont_dupe = cap.double.isChecked()
             new_cap.cap_type = cap.cap_type.value()
             self.capinfo.caps.append(copy.deepcopy(new_cap))
@@ -368,8 +410,8 @@ class CapInfoBox(QScrollArea):
         return self.capinfo
 
     def add_obj(self):
-        self.capinfo.caps.append(cave.Cap(0, cave.TekiBase("Chappy", 0, 0, 0, False, "ahiru"), True))
-        new_widget = CapWidget(self, cave.Cap(0, cave.TekiBase("Chappy", 0, 0, 0, False, "ahiru"), True))
+        self.capinfo.caps.append(cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True))
+        new_widget = CapWidget(self, cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True))
         self.caps += [new_widget]
         self.layout.insertWidget(len(self.caps), new_widget)
         self.buttons.check_disable(len(self.capinfo.caps))
@@ -382,34 +424,34 @@ class CapInfoBox(QScrollArea):
 
 
 class TekiWidget(QWidget):
-    def __init__(self, parent, teki):
+    def __init__(self, parent, teki:cave.Teki):
         super(QWidget, self).__init__(parent)
-        self.layout = QGridLayout()
+        self.setAcceptDrops(True)
+        self.glayout = QGridLayout()
         self.teki = teki
-        self.teki_base_obj = self.teki.teki
-        name = self.teki_base_obj.name
+        name = self.teki.name
         self.index = keys.teki_keys.index(name)
         self.tekicombo = DefaultInfoMenu(self, keys.all_teki, self.index)
         if keys.settings.autoteki:
             self.tekicombo.currentIndexChanged.connect(self.update_fallheld)
         self.tekicombo.setToolTip("Name of the Teki being spawned")
         self.spawn_count = QSpinBox()
-        self.spawn_count.setValue(self.teki_base_obj.fill)
+        self.spawn_count.setValue(self.teki.fill)
         self.spawn_count.setToolTip("Spawn Num")
         self.weight = QSpinBox()
-        self.weight.setValue(self.teki_base_obj.weight)
+        self.weight.setValue(self.teki.weight)
         self.weight.setMaximum(9)
         self.weight.setToolTip("Weight")
         self.fall = QComboBox()
         self.fall.addItems(["None", "All", "Pikmin", "Captain", "Carry", "Purple"])
-        self.fall.setCurrentIndex(self.teki_base_obj.falltype)
+        self.fall.setCurrentIndex(self.teki.falltype)
         self.fall.setToolTip("Fall Activation")
-        if self.teki_base_obj.item in list(keys.settings.item_dict.keys()):
-            self.item_index = list(keys.settings.item_dict.keys()).index(self.teki_base_obj.item)
+        if self.teki.item in list(keys.settings.item_dict.keys()):
+            self.item_index = list(keys.settings.item_dict.keys()).index(self.teki.item)
         else:
             self.item_index = 0
         item_with_none = [(QIcon(f"presets/{keys.settings.preset}/itemIcons/None.png"), "None")] + keys.all_item
-        if (self.teki_base_obj.has_item):
+        if (self.teki.has_item):
             self.itemcombo = DefaultInfoMenu(self, item_with_none, self.item_index + 1)
         else:
             self.itemcombo = DefaultInfoMenu(self, item_with_none, 0)
@@ -427,14 +469,14 @@ class TekiWidget(QWidget):
             self.spawn.currentIndexChanged.connect(self.check_autoupdate)
             self.update_fallheld(self.index)
 
-        self.layout.addWidget(self.tekicombo, 0, 0, 1, 3)
-        self.layout.addWidget(self.itemcombo, 1, 0, 1, 2)
-        self.layout.addWidget(self.fall, 1, 2)
-        self.layout.addWidget(self.spawn_count, 2, 0)
-        self.layout.addWidget(self.weight, 2, 1)
-        self.layout.addWidget(self.spawn, 2, 2)
+        self.glayout.addWidget(self.tekicombo, 0, 0, 1, 3)
+        self.glayout.addWidget(self.itemcombo, 1, 0, 1, 2)
+        self.glayout.addWidget(self.fall, 1, 2)
+        self.glayout.addWidget(self.spawn_count, 2, 0)
+        self.glayout.addWidget(self.weight, 2, 1)
+        self.glayout.addWidget(self.spawn, 2, 2)
 
-        self.setLayout(self.layout)
+        self.setLayout(self.glayout)
     
     def check_autoupdate(self, index):
         if index == 6:
@@ -453,6 +495,21 @@ class TekiWidget(QWidget):
         else:
             self.fall.setCurrentIndex(0)
             self.itemcombo.hide()
+    
+    def mouseMoveEvent(self, mouse: QMouseEvent) -> None:
+        if (mouse.buttons() == Qt.MouseButton.LeftButton):
+            drag = QDrag(self)
+            mime = QMimeData()
+            drag.setMimeData(mime)
+
+            pixmap = QPixmap(self.size())
+            self.render(pixmap)
+            drag.setPixmap(pixmap)
+
+            drag.exec(Qt.DropAction.MoveAction)
+
+    
+
 
 
 
@@ -630,6 +687,22 @@ class FloorTab(QWidget):
         return return_floor
     
 
+class FloorTabBar(QTabBar):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+    def mouseDoubleClickEvent(self, mouse: QMouseEvent) -> None:
+        idx:int = self.currentIndex()
+        ok:bool = True
+        newName, ok = QInputDialog.getText(self, "Change Name", "Insert New Floor Name", QLineEdit.EchoMode.Normal, self.tabText(idx))
+        if (ok):
+            self.setTabText(idx, newName)
+        return super().mouseDoubleClickEvent(mouse)
+    
+    
+
+
 
 class FloorTabHolder(QWidget):
     
@@ -646,6 +719,8 @@ class FloorTabHolder(QWidget):
         
         # Initialize tab screen
         self.tabs = QTabWidget()
+        self.tabs.setTabBar(FloorTabBar(self))
+        self.tabs.setMovable(True)
         
         # Add tabs
         self.initTabs()
@@ -654,21 +729,25 @@ class FloorTabHolder(QWidget):
         self.layout.addWidget(self.tabs)
         self.layout.addWidget(self.buttons)
         self.setLayout(self.layout)
+
     
     def initTabs(self):
         self.resize(1325, 800)
         for i, floor in enumerate(self.floors, 1):
             newtab = FloorTab(self, floor, self.cave_dir, i - 1)
-            self.tabs.addTab(newtab, f"{i}")
+            self.tabs.addTab(newtab, f"Floor {i}")
     
     def add_tab(self, floors, floor_num):
         self.floors = floors
         self.floor_num = floor_num
         if len(floors) >= floor_num:
-            self.tabs.addTab(FloorTab(self, self.floors[self.tabs.count()], self.cave_dir, self.tabs.count()), f"{self.tabs.count() + 1}")
+            self.tabs.addTab(FloorTab(self, self.floors[self.tabs.count()], self.cave_dir, self.tabs.count()), f"Floor {self.tabs.count() + 1}")
         else:
             self.floors.append(cave.get_default_floor())
-            self.tabs.addTab(FloorTab(self, cave.get_default_floor(), self.cave_dir, self.tabs.count()), f"{self.tabs.count() + 1}")
+            self.tabs.addTab(FloorTab(self, cave.get_default_floor(), self.cave_dir, self.tabs.count()), f"Floor {self.tabs.count() + 1}")
+
+    
+        
 
     def remove_tab(self, floors, floor_num):
         self.floors = floors
