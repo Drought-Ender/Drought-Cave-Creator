@@ -1,5 +1,11 @@
 # Drought Ender's Cave Creator 
 
+## How to run
+
+1. Have Python installed
+2. Make sure PySide6, PyYAML, Pillow, and appdirs are installed (`pip install <library>` in a command prompt if they are not)
+3. Open command prompt type `python3` and drag the `main.py` file into the prompt (or simply click on main.py if you're using windows).
+
 ## Presets & Preset Settings
 
 ### What is a preset folder?
