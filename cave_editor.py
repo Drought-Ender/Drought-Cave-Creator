@@ -710,7 +710,7 @@ class CaveGenPopup(QDialog):
         
         self.label.setPixmap(QPixmap(path))
         sz = self.label.pixmap().size()
-        self.label.setMaximumSize(800 * sz.width() / sz.height(), 800)
+        self.label.setMaximumSize(800 * sz.width() // sz.height(), 800)
         self.layout.addWidget(self.label)
         if seed:
             self.seed = QLabel(f"Seed: {hex(seed)}", self)
