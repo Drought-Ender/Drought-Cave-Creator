@@ -11,8 +11,9 @@ import CaveGenLinker
 from PyQt6.QtWidgets import (
     QMainWindow, QLineEdit, QLabel, QMessageBox, QVBoxLayout, QGridLayout, QCheckBox, 
     QScrollArea, QComboBox, QListView, QHBoxLayout, QFileDialog, QWidget, QPushButton,
-    QSpinBox, QDoubleSpinBox, QTabWidget, QDialog, QTabBar, QInputDialog)
-from PyQt6.QtGui import QIcon, QAction, QPixmap, QMouseEvent, QDrag, QDragEnterEvent, QDragLeaveEvent, QDropEvent
+    QSpinBox, QDoubleSpinBox, QTabWidget, QDialog, QTabBar, QInputDialog, QMenu)
+from PyQt6.QtGui import (QIcon, QAction, QPixmap, QMouseEvent, QDrag,
+ QDragEnterEvent, QDragLeaveEvent, QDropEvent, QContextMenuEvent, QCursor)
 from PyQt6.QtCore import Qt, QMimeData
 from extra_widgets import betterSpinBox, betterSpinBoxFloat, AddSubButtons, lineEditLable, directoryButton
 
@@ -39,7 +40,8 @@ keys = Keys()
 class ItemWidget(QWidget):
     def __init__(self, parent, item):
         super(QWidget, self).__init__(parent)
-        self.layout = QGridLayout()
+        self.parent = parent
+        self.vlayout = QGridLayout()
         self.treasure = item
         if self.treasure.name in list(keys.settings.item_dict.keys()):
             self.item_index = list(keys.settings.item_dict.keys()).index(self.treasure.name)
@@ -55,14 +57,31 @@ class ItemWidget(QWidget):
         self.weight.setMaximum(9)
         self.weight.setToolTip("Weight")
         if keys.settings.show_item_weight:
-            self.layout.addWidget(self.itemcombo, 0, 0, 1, 2)
-            self.layout.addWidget(self.spawn_count, 1, 0)
-            self.layout.addWidget(self.weight, 1, 1)
+            self.vlayout.addWidget(self.itemcombo, 0, 0, 1, 2)
+            self.vlayout.addWidget(self.spawn_count, 1, 0)
+            self.vlayout.addWidget(self.weight, 1, 1)
         else:
-            self.layout.addWidget(self.itemcombo, 0, 0)
-            self.layout.addWidget(self.spawn_count, 0, 1)
+            self.vlayout.addWidget(self.itemcombo, 0, 0)
+            self.vlayout.addWidget(self.spawn_count, 0, 1)
 
-        self.setLayout(self.layout)
+        self.setLayout(self.vlayout)
+
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        self.menu = QMenu(self)
+        delete = QAction("Delete", self)
+        delete.triggered.connect(self.removeThisWidget)
+
+        insert = QAction("Insert", self)
+        insert.triggered.connect(self.addWidgetHere)
+        self.menu.addAction(delete)
+        self.menu.addAction(insert)
+        self.menu.popup(QCursor().pos())
+
+    def removeThisWidget(self):
+        self.parent.sub_obj_at(self)
+
+    def addWidgetHere(self):
+        self.parent.add_obj_at(self)
 
 class ItemInfoBox(QScrollArea):
     def __init__(self, parent, iteminfo):
@@ -71,17 +90,17 @@ class ItemInfoBox(QScrollArea):
         self.name = QLabel("ItemInfo")
         self.name.setToolTip("Decides how treasures on the floor are spawned")
         self.iteminfo = iteminfo
-        self.layout = QVBoxLayout(self.this_widget)
-        self.layout.addWidget(self.name)
+        self.vlayout = QVBoxLayout(self.this_widget)
+        self.vlayout.addWidget(self.name)
         self.items = []
         for i, item in enumerate(self.iteminfo.items):
             if i < self.iteminfo.item_count:
                 next_widget = ItemWidget(self, item)
                 self.items.append(next_widget)
-                self.layout.addWidget(next_widget)
+                self.vlayout.addWidget(next_widget)
         self.buttons = AddSubButtons(self)
         self.buttons.check_disable(len(self.iteminfo.items))
-        self.layout.addWidget(self.buttons)
+        self.vlayout.addWidget(self.buttons)
         self.setWidget(self.this_widget)
         self.setWidgetResizable(True)
 
@@ -102,18 +121,35 @@ class ItemInfoBox(QScrollArea):
         self.iteminfo.items.append(cave.Treasure("ahiru", 0, 0))
         new_widget = ItemWidget(self, cave.Treasure("ahiru", 0, 0))
         self.items += [new_widget]
-        self.layout.insertWidget(len(self.items), new_widget)
+        self.vlayout.insertWidget(len(self.items), new_widget)
         self.buttons.check_disable(len(self.iteminfo.items))
     
     def sub_obj(self):
         self.iteminfo.items.pop()
         remove = self.items.pop()
-        self.layout.removeWidget(remove)
+        self.vlayout.removeWidget(remove)
+        self.buttons.check_disable(len(self.iteminfo.items))
+
+
+    def sub_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.iteminfo.items.pop(widgetIdx - 1)
+        self.items.pop(widgetIdx - 1)
+        self.vlayout.removeWidget(widget)
+        self.buttons.check_disable(len(self.iteminfo.items))
+
+    def add_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.iteminfo.items.insert(widgetIdx - 1, cave.Treasure("ahiru", 0, 0))
+        new_widget = ItemWidget(self, cave.Treasure("ahiru", 0, 0))
+        self.items.insert(widgetIdx - 1, new_widget)
+        self.vlayout.insertWidget(widgetIdx, new_widget)
         self.buttons.check_disable(len(self.iteminfo.items))
 
 class GateWidget(QWidget):
     def __init__(self, parent, gate):
         super(QWidget, self).__init__(parent)
+        self.parent = parent
         self.layout = QHBoxLayout()
         self.gate = gate
         self.name = QLineEdit(self.gate.name)
@@ -134,6 +170,23 @@ class GateWidget(QWidget):
 
         self.setLayout(self.layout)
 
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        self.menu = QMenu(self)
+        delete = QAction("Delete", self)
+        delete.triggered.connect(self.removeThisWidget)
+
+        insert = QAction("Insert", self)
+        insert.triggered.connect(self.addWidgetHere)
+        self.menu.addAction(delete)
+        self.menu.addAction(insert)
+        self.menu.popup(QCursor().pos())
+
+    def removeThisWidget(self):
+        self.parent.sub_obj_at(self)
+
+    def addWidgetHere(self):
+        self.parent.add_obj_at(self)
+
 class GateInfoBox(QScrollArea):
     def __init__(self, parent, gateinfo):
         super(QWidget, self).__init__(parent)
@@ -141,17 +194,17 @@ class GateInfoBox(QScrollArea):
         self.name = QLabel("GateInfo")
         self.name.setToolTip("Sets the gates that spawn on the floor")
         self.gateinfo = gateinfo
-        self.layout = QVBoxLayout(self.this_widget)
-        self.layout.addWidget(self.name)
+        self.vlayout = QVBoxLayout(self.this_widget)
+        self.vlayout.addWidget(self.name)
         self.gates = []
         for i, gate in enumerate(self.gateinfo.gates):
             if i < self.gateinfo.gate_count:
                 next_widget = GateWidget(self, gate)
                 self.gates.append(next_widget)
-                self.layout.addWidget(next_widget)
+                self.vlayout.addWidget(next_widget)
         self.buttons = AddSubButtons(self)
         self.buttons.check_disable(len(self.gateinfo.gates))
-        self.layout.addWidget(self.buttons)
+        self.vlayout.addWidget(self.buttons)
         self.setWidget(self.this_widget)
         self.setWidgetResizable(True)
     
@@ -172,18 +225,35 @@ class GateInfoBox(QScrollArea):
         self.gateinfo.gates.append(cave.Gate("gate", 1000.0, 1))
         new_widget = GateWidget(self, cave.Gate("gate", 1000.0, 1))
         self.gates += [new_widget]
-        self.layout.insertWidget(len(self.gates), new_widget)
+        self.vlayout.insertWidget(len(self.gates), new_widget)
         self.buttons.check_disable(len(self.gateinfo.gates))
     
     def sub_obj(self):
         self.gateinfo.gates.pop()
         remove = self.gates.pop()
-        self.layout.removeWidget(remove)
+        self.vlayout.removeWidget(remove)
+        self.buttons.check_disable(len(self.gateinfo.gates))
+
+
+    def sub_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.gateinfo.gates.pop(widgetIdx - 1)
+        self.gates.pop(widgetIdx - 1)
+        self.vlayout.removeWidget(widget)
+        self.buttons.check_disable(len(self.gateinfo.gates))
+
+    def add_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.gateinfo.gates.insert(widgetIdx - 1, cave.Gate("gate", 1000.0, 1))
+        new_widget = GateWidget(self, cave.Gate("gate", 1000.0, 1))
+        self.gates.insert(widgetIdx - 1, new_widget)
+        self.vlayout.insertWidget(widgetIdx, new_widget)
         self.buttons.check_disable(len(self.gateinfo.gates))
 
 class TekiInfoBox(QScrollArea):
     def __init__(self, parent, tekiinfo):
         super(QWidget, self).__init__(parent)
+        self.parent = parent
         self.dragWidget = None
         self.setAcceptDrops(True)
         self.this_widget = QWidget()
@@ -230,7 +300,7 @@ class TekiInfoBox(QScrollArea):
     def add_obj(self):
         self.tekiinfo.tekis.append(cave.Teki("Chappy", 0, 0, 0, False, "ahiru", 0))
         new_widget = TekiWidget(self, cave.Teki("Chappy", 0, 0, 0, False, "ahiru", 0))
-        self.tekis += [new_widget]
+        self.tekis.append(new_widget)
         self.vlayout.insertWidget(len(self.tekis), new_widget)
         self.buttons.check_disable(len(self.tekiinfo.tekis))
     
@@ -238,6 +308,21 @@ class TekiInfoBox(QScrollArea):
         self.tekiinfo.tekis.pop()
         remove = self.tekis.pop()
         self.vlayout.removeWidget(remove)
+        self.buttons.check_disable(len(self.tekiinfo.tekis))
+
+    def sub_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.tekiinfo.tekis.pop(widgetIdx - 1)
+        self.tekis.pop(widgetIdx - 1)
+        self.vlayout.removeWidget(widget)
+        self.buttons.check_disable(len(self.tekiinfo.tekis))
+
+    def add_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.tekiinfo.tekis.insert(widgetIdx - 1,cave.Teki("Chappy", 0, 0, 0, False, "ahiru", 0))
+        new_widget = TekiWidget(self, cave.Teki("Chappy", 0, 0, 0, False, "ahiru", 0))
+        self.tekis.insert(widgetIdx - 1, new_widget)
+        self.vlayout.insertWidget(widgetIdx, new_widget)
         self.buttons.check_disable(len(self.tekiinfo.tekis))
         
     def dragEnterEvent(self, drag: QDragEnterEvent) -> None:
@@ -282,6 +367,7 @@ class TekiInfoBox(QScrollArea):
 class CapWidget(QWidget):
     def __init__(self, parent, cap:cave.Cap):
         super(QWidget, self).__init__(parent)
+        self.parent = parent
         self.layout = QGridLayout()
         self.cap = cap
         name = self.cap.name
@@ -345,6 +431,23 @@ class CapWidget(QWidget):
             self.fall.setCurrentIndex(0)
             self.itemcombo.hide()
 
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        self.menu = QMenu(self)
+        delete = QAction("Delete", self)
+        delete.triggered.connect(self.removeThisWidget)
+
+        insert = QAction("Insert", self)
+        insert.triggered.connect(self.addWidgetHere)
+        self.menu.addAction(delete)
+        self.menu.addAction(insert)
+        self.menu.popup(QCursor().pos())
+
+    def removeThisWidget(self):
+        self.parent.sub_obj_at(self)
+
+    def addWidgetHere(self):
+        self.parent.add_obj_at(self)
+
 
 class betterComboBox(QWidget):
     def __init__(self, parent, text, items, val):
@@ -372,16 +475,16 @@ class CapInfoBox(QScrollArea):
         self.name = QLabel("CapInfo")
         self.name.setToolTip("Sets the enemies that spawn in item caps")
         self.capinfo = capinfo
-        self.layout = QVBoxLayout(self.this_widget)
-        self.layout.addWidget(self.name)
+        self.vlayout = QVBoxLayout(self.this_widget)
+        self.vlayout.addWidget(self.name)
         self.caps = []
         for i, cap in enumerate(self.capinfo.caps):
             if i < self.capinfo.cap_count:
                 self.caps.append(CapWidget(self, cap))
-                self.layout.addWidget(self.caps[-1])
+                self.vlayout.addWidget(self.caps[-1])
         self.buttons = AddSubButtons(self)
         self.buttons.check_disable(len(self.capinfo.caps))
-        self.layout.addWidget(self.buttons)
+        self.vlayout.addWidget(self.buttons)
         self.setWidget(self.this_widget)
 
 
@@ -413,19 +516,35 @@ class CapInfoBox(QScrollArea):
         self.capinfo.caps.append(cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True))
         new_widget = CapWidget(self, cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True))
         self.caps += [new_widget]
-        self.layout.insertWidget(len(self.caps), new_widget)
+        self.vlayout.insertWidget(len(self.caps), new_widget)
         self.buttons.check_disable(len(self.capinfo.caps))
     
     def sub_obj(self):
         self.capinfo.caps.pop()
         remove = self.caps.pop()
-        self.layout.removeWidget(remove)
+        self.vlayout.removeWidget(remove)
+        self.buttons.check_disable(len(self.capinfo.caps))
+
+    def sub_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.capinfo.caps.pop(widgetIdx - 1)
+        self.caps.pop(widgetIdx - 1)
+        self.vlayout.removeWidget(widget)
+        self.buttons.check_disable(len(self.capinfo.caps))
+
+    def add_obj_at(self, widget):
+        widgetIdx:int = self.vlayout.indexOf(widget)
+        self.capinfo.caps.insert(widgetIdx - 1, cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True))
+        new_widget = CapWidget(self, cave.Cap(0, "Chappy", 0, 0, 0, False, "ahiru", True))
+        self.caps.insert(widgetIdx - 1, new_widget)
+        self.vlayout.insertWidget(widgetIdx, new_widget)
         self.buttons.check_disable(len(self.capinfo.caps))
 
 
 class TekiWidget(QWidget):
     def __init__(self, parent, teki:cave.Teki):
         super(QWidget, self).__init__(parent)
+        self.parent = parent
         self.setAcceptDrops(True)
         self.glayout = QGridLayout()
         self.teki = teki
@@ -497,6 +616,8 @@ class TekiWidget(QWidget):
             self.itemcombo.hide()
     
     def mouseMoveEvent(self, mouse: QMouseEvent) -> None:
+        # removing this functionality for now bc it's buggy
+        return
         if (mouse.buttons() == Qt.MouseButton.LeftButton):
             drag = QDrag(self)
             mime = QMimeData()
@@ -507,9 +628,24 @@ class TekiWidget(QWidget):
             drag.setPixmap(pixmap)
 
             drag.exec(Qt.DropAction.MoveAction)
-
     
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        self.menu = QMenu(self)
+        delete = QAction("Delete", self)
+        delete.triggered.connect(self.removeThisWidget)
 
+        insert = QAction("Insert", self)
+        insert.triggered.connect(self.addWidgetHere)
+        self.menu.addAction(delete)
+        self.menu.addAction(insert)
+        self.menu.popup(QCursor().pos())
+
+    def removeThisWidget(self):
+        self.parent.sub_obj_at(self)
+
+    def addWidgetHere(self):
+        self.parent.add_obj_at(self)
+    
 
 
 
@@ -805,17 +941,6 @@ class CaveTab(QMainWindow):
 
         self.FloorTabs = FloorTabHolder(self, self.cave_dir)
         self.FloorTabs.move(75, 0)
-        # self.add_button = QPushButton(self)
-        # self.add_button.setText("Add Floor")
-        # self.add_button.move(550, 50)
-        # self.add_button.setFixedSize(100, 30)
-        # self.add_button.pressed.connect(self.add_floor)
-
-        # self.sub_button = QPushButton(self)
-        # self.sub_button.setText("Remove Floor")
-        # self.sub_button.move(750, 50)
-        # self.sub_button.setFixedSize(100, 30)
-        # self.sub_button.pressed.connect(self.sub_floor)
 
         openFile = QAction(QIcon('open.png'), '&Open', self)
         openFile.setShortcut('Ctrl+O')

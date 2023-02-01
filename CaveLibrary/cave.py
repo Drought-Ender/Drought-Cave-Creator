@@ -241,7 +241,8 @@ def read_teki(cave, start_index):
             comment_start = line.find("#")
             spawn_read = line[4:comment_start].strip(" \\trnb")
             spawn_read = spawn_read.split(" ")
-            teki.append(Teki(read_tekibase(teki_read, strip_int(spawn_read[0])), strip_int(spawn_read[0])))
+            root = read_tekibase(teki_read, strip_int(spawn_read[0]))
+            teki.append(Teki(root.name, root.fill, root.weight, root.falltype, root.has_item, root.item, strip_int(spawn_read[0])))
         if i == teki_num * 2:
             return TekiInfo(teki_num, teki), pad_close(cave, start_index + i)
 
@@ -277,6 +278,7 @@ def read_tekibase(tekistr, spawn=0):
         i += len(teki)
         i += 1
         item = tekistr[0][i:]
+        print(item)
     return TekiBase(teki, fill, weight, fall_type, has_item, item)
 
 def read_item(cave, start_index):
@@ -362,7 +364,8 @@ def read_cap(cave, start_index):
         else:
             comment_start = line.find("#")
             type_read = line[4:comment_start].strip(" \\trnb")
-            cap.append(Cap(strip_int(captype_read), read_tekibase(cap_read), type_read == "1"))
+            root = read_tekibase(cap_read)
+            cap.append(Cap(strip_int(captype_read), root.name, root.fill, root.weight, root.falltype, root.has_item, root.item, type_read == "1"))
         if i == cap_count * 3 - 1:
             return CapInfo(cap_count, cap), pad_close(cave, start_index + i)
 

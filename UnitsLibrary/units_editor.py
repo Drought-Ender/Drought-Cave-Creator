@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import (
     QMainWindow, QLabel, QMessageBox, QVBoxLayout,
     QGridLayout, QScrollArea, QComboBox,
     QHBoxLayout, QFileDialog, QWidget, QPushButton,
-    QSpinBox, QCompleter, QDialog)
-from PyQt6.QtGui import QIcon, QAction, QPixmap
+    QSpinBox, QCompleter, QDialog, QMenu)
+from PyQt6.QtGui import QIcon, QAction, QPixmap, QContextMenuEvent, QCursor
 from PyQt6.QtCore import Qt, QSortFilterProxyModel
 from extra_widgets import betterSpinBox, betterSpinBoxFloat, AddSubButtons, lineEditLable
 
@@ -241,9 +241,11 @@ class UnitEdit(QDialog):
         self.parent.update_unit(units.CaveUnit(unit_ver, unit_name, unit_size, unit_type, unit_flags, unit_doors))
 
 class UnitImage(QWidget):
-    def __init__(self, parent, unit:units.CaveUnit):
+    def __init__(self, parent, unit:units.CaveUnit, uwindow):
         super(QWidget, self).__init__(parent)
         self.layout = QVBoxLayout()
+        self.parent = parent
+        self.uwindow = uwindow
         self.unit = unit
         self.name = unit.name
         self.pix = f"./presets/{keys.settings.preset}/units/{self.name}"
@@ -266,45 +268,86 @@ class UnitImage(QWidget):
         self.name = unit.name
         self.label.setText(self.name)
 
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        self.menu = QMenu(self)
+        delete = QAction("Delete", self)
+        delete.triggered.connect(self.removeThisWidget)
+
+        #insert = QAction("Insert", self)
+        #insert.triggered.connect(self.addWidgetHere)
+        self.menu.addAction(delete)
+        #self.menu.addAction(insert)
+        self.menu.popup(QCursor().pos())
+
+
+    def removeThisWidget(self):
+        self.uwindow.sub_obj_at(self)
+
+    def addWidgetHere(self):
+        self.uwindow.add_obj_at(self)
+
 class UnitsWindow(QScrollArea):
     def __init__(self, parent, units_:units.UnitsFile):
         super(QWidget, self).__init__(parent)
+        self.parent = parent
         self.units = units_
         self.this_widget = QWidget()
         self.list = []
-        self.layout = QGridLayout(self.this_widget)
+        self.gridLayout = QGridLayout(self.this_widget)
         for i, unit in enumerate(units_.units):
-            new = UnitImage(self, unit)
+            new = UnitImage(self, unit, self)
             self.list.append(new)
-            self.layout.addWidget(new, i // 5, i % 5)
+            self.gridLayout.addWidget(new, i // 5, i % 5)
         self.setWidget(self.this_widget)
         self.setWidgetResizable(True)
         
     def get_units(self):
-        return [copy.deepcopy(keys.unit_dict[unitwidget.name]) for unitwidget in self.this_widget.children() if type(unitwidget) == UnitImage]
+        return [copy.deepcopy(keys.unit_dict[unitwidget.name]) for unitwidget in self.this_widget.children() if isinstance(unitwidget, UnitImage)]
+
+
+
+    def sub_obj_at(self, widget):
+        self.parent.sub_obj_at(widget)
+
+    def add_obj_at(self, widget):
+        self.parent.add_obj_at(widget)
+    
 
 
 class WindowHolder(QWidget):
     def __init__(self, parent, units_):
         super(QWidget, self).__init__(parent)
-        self.layout = QVBoxLayout()
+        self.boxLayout:QVBoxLayout = QVBoxLayout()
         self.Uwindow = UnitsWindow(self, units_)
-        self.layout.addWidget(self.Uwindow)
-        self.buttons = AddSubButtonsUnits(self)
-        self.layout.addWidget(self.buttons)
-        self.setLayout(self.layout)
+        self.boxLayout.addWidget(self.Uwindow)
+        self.buttons = AddSubButtonsUnits(self, self.Uwindow)
+        self.boxLayout.addWidget(self.buttons)
+        self.setLayout(self.boxLayout)
 
     def add_obj(self):
         unit = self.buttons.get_unit()
-        i = len(self.Uwindow.list)
+        i = 0
+        while i < 100:
+            nextSpot = self.Uwindow.gridLayout.itemAtPosition(i // 5, i % 5)
+            if nextSpot is None:
+                break
+            i += 1
         self.Uwindow.list.append(unit)
         
-        self.Uwindow.layout.addWidget(unit, i // 5, i % 5)
+        self.Uwindow.gridLayout.addWidget(unit, i // 5, i % 5)
         self.buttons.check_disable(len(self.Uwindow.list))
     
     def sub_obj(self):
         remove = self.Uwindow.list.pop()
-        self.Uwindow.layout.removeWidget(remove)
+        self.Uwindow.gridLayout.removeWidget(remove)
+        remove.deleteLater()
+        self.buttons.check_disable(len(self.Uwindow.list))
+
+    
+    def sub_obj_at(self, widget):
+        widgetIdx:int = self.Uwindow.gridLayout.indexOf(widget)
+        remove = self.Uwindow.list.pop(widgetIdx)
+        self.Uwindow.gridLayout.removeWidget(remove)
         remove.deleteLater()
         self.buttons.check_disable(len(self.Uwindow.list))
         
@@ -312,8 +355,10 @@ class WindowHolder(QWidget):
         return units.UnitsFile(self.Uwindow.get_units())
 
 class AddSubButtonsUnits(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, uwindow):
         super(QWidget, self).__init__(parent)
+        self.parent = parent
+        self.uwindow = uwindow
         self.layout = QHBoxLayout()
         self.add_item = QPushButton("+")
         self.sub_item = QPushButton("-")
@@ -336,7 +381,14 @@ class AddSubButtonsUnits(QWidget):
         if len(keys.unit_dict.keys()) <= self.select_item.currentIndex():
             return
         self.unit_name = tuple(keys.unit_dict.keys())[self.select_item.currentIndex()]
-        return UnitImage(self, keys.unit_dict[self.unit_name])
+        return UnitImage(self, keys.unit_dict[self.unit_name], self.uwindow)
+
+    def add_obj_at(self, widget):
+        pass
+
+    def sub_obj_at(self, widget):
+        self.parent.sub_obj_at(widget)
+
 
 class UnitsTab(QMainWindow):
     def __init__(self, units_:units.UnitsFile, units_dir):
