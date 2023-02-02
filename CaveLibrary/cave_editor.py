@@ -809,10 +809,10 @@ class FloorTab(QWidget):
         self.layout.addWidget(self.capinfo, 0, 2)
         self.setLayout(self.layout)
     
-    def update_contents(self):
+    def update_contents(self, i):
         floorinfo = self.floorinfo.update_floor()
-        floorinfo.floor_end = self.i
-        floorinfo.floor_start = self.i
+        floorinfo.floor_end = i
+        floorinfo.floor_start = i
         tekiinfo = self.tekiinfo.update_teki()
         iteminfo = self.iteminfo.update_item()
         gateinfo = self.gateinfo.update_gate()
@@ -836,10 +836,6 @@ class FloorTabBar(QTabBar):
             self.setTabText(idx, newName)
         return super().mouseDoubleClickEvent(mouse)
     
-    
-
-
-
 class FloorTabHolder(QWidget):
     
     def __init__(self, parent, cave_dir):
@@ -882,9 +878,6 @@ class FloorTabHolder(QWidget):
             self.floors.append(cave.get_default_floor())
             self.tabs.addTab(FloorTab(self, cave.get_default_floor(), self.cave_dir, self.tabs.count()), f"Floor {self.tabs.count() + 1}")
 
-    
-        
-
     def remove_tab(self, floors, floor_num):
         self.floors = floors
         self.floor_num = floor_num
@@ -892,7 +885,7 @@ class FloorTabHolder(QWidget):
 
     def update_contents(self):
         for i in range(self.tabs.count()):
-            self.floors[i] = self.tabs.widget(i).update_contents()
+            self.floors[i] = self.tabs.widget(i).update_contents(i)
         return cave.CaveInfo(self.floor_num, self.floors)
 
     def add_obj(self):
