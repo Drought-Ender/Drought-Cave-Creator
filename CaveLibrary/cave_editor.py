@@ -607,12 +607,12 @@ class TekiWidget(QWidget):
         if keys.settings.teki_dict[keys.teki_keys[index]]["fall"]:
             self.fall.show()
         else:
-            self.fall.setCurrentIndex(0)
+            # self.fall.setCurrentIndex(0)
             self.fall.hide()
         if keys.settings.teki_dict[keys.teki_keys[index]]["item"]:
             self.itemcombo.show()
         else:
-            self.fall.setCurrentIndex(0)
+            # self.fall.setCurrentIndex(0)
             self.itemcombo.hide()
     
     def mouseMoveEvent(self, mouse: QMouseEvent) -> None:
