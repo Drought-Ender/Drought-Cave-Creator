@@ -340,7 +340,7 @@ pickling is not a secure method of storage, do not accept *.pickle* files from p
 Self explanitory, no orb is used when the player doesn't have stellar orb, stellar orb lighting is used when the player has orb.
 
 #### Distance From Light
-Self explanitory, this is the distance from the light source, the lower the value - the strong the light
+Self explanitory, this is the distance from the light source, the lower the value, the stronger the light
 
 #### Main light
 This is the main color that starts from the player.
