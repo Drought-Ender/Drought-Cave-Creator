@@ -10,7 +10,7 @@ The python file will automatically adjust it's work directory to where it was ru
 
 ## About
 
-This is a cave creator designed around being geared to full game applications rather than challenge mode or CaveNet (which has not been reimplmented added, sorry).
+This is a cave creator designed around being geared to full game applications rather than challenge mode or CaveNet (which has not been reimplmented, sorry).
 
 The main pros of using this over Jimble's are:
 
