@@ -2,6 +2,9 @@ import settings
 
 strip_int = lambda x : int(''.join(filter(str.isdigit, x)))
 
+strip_float = lambda x : float(''.join(filter(str.isdecimal, x)))
+
+
 class Floorinfo:
     def __init__(self):
         self.floor_start = None
@@ -130,17 +133,53 @@ class CaveInfo:
 
 #
 
+id32 = '$0123456789abcdefghijklmnopqrstuvwxyz_-ABCDEFGHIJKLMNOPQRSTUVWXYZ.'
+
+
+def next_string(line:str, subindex = 0):
+    while subindex < len(line) and line[subindex] not in id32:
+        subindex += 1
+    if subindex >= len(line):
+        return None, subindex
+    start = subindex
+    while subindex < len(line) and line[subindex] in id32:
+        subindex += 1
+    return line[start:subindex], subindex + 1
+
+def next_string_list(lines:list[str], subindex = 0, subsubindex = 0):
+    val, subval = next_string(lines[subindex], subsubindex)
+    while not val:
+        subindex += 1
+        val, subval = next_string(lines[subindex])
+    return val, subindex, subval
+
+def readID32(cave:list[str], start):
+    valueDict = {}
+    line, val = readID32Line(cave[start])
+    while line != "_eof":
+        valueDict[line] = val
+        start += 1
+        line, val = readID32Line(cave[start])
+    return valueDict, start
+
+
+def readID32Line(line:str):
+    subindex = 0
+    while subindex < len(line) and line[subindex].lower() not in id32:
+        subindex += 1
+    _id = line[subindex:subindex+4]
+    typeof, place = next_string(line, subindex+4)
+    second, place = next_string(line, place)
+    return _id, second
+
 def read_cave(cave):
-    floor_num = str(cave[2])
-    comment_start = floor_num.find("#")
-    floor_num = floor_num[4:comment_start].strip()
-    floor_num = floor_num.split(" ")
-    
-    floor_num = int(floor_num[2])
-    
+    cave = [line.decode("shift-jis") for line in cave]
+    floor_dict, start_index = readID32(cave, 0)
+    floor_num = floor_dict["c000"]
+    floor_num, start_index = next_int_list(cave, start_index)
+
     floors = []
 
-    start_index = 4
     try:
         for i in range(floor_num):
             floorinfo, start_index = read_floor(cave, start_index)
@@ -151,11 +190,42 @@ def read_cave(cave):
             if floorinfo.use_cap:
                 capinfo, start_index = read_cap(cave, start_index)
                 floors[i].capinfo = capinfo
+            start_index += 1
     except Exception as e:
         raise BaseException(f"{e} while reading object at line {start_index}")
     return CaveInfo(floor_num, floors)
-        
-        
+
+def next_int_list(lines:list[str], subindex = 0, subsubindex = 0):
+    val:int = next_int(lines[subindex], subsubindex)
+    while val == None:
+        subindex += 1
+        val:int = next_int(lines[subindex])
+    return val, subindex + 1
+
+def next_int(line, subindex = 0):
+    while subindex < len(line) and not line[subindex].isdigit():
+        subindex += 1
+
+    
+    
+    if subindex >= len(line):
+        return None
+    return strip_int(line[subindex:])
+
+def next_float_list(lines:list[str], subindex = 0, subsubindex = 0):
+    val:float = next_float(lines[subindex], subsubindex)
+    while val is None:
+        subindex += 1
+        val:float = next_float(lines[subindex])
+    return val, subindex + 1
+
+def next_float(line, subindex = 0):
+    while subindex < len(line) and not line[subindex].isdecimal():
+        subindex += 1
+
+    if subindex >= len(line):
+        return None
+    return strip_float(line[subindex:])
 
 
 def pad_close(cave, index):
@@ -164,100 +234,67 @@ def pad_close(cave, index):
     return index + 1
 
 def read_floor(cave, start_index):
-    floor_read = []
-    start_index += 3
-    for i, line in enumerate(cave[start_index:]):
-        line = str(line)
-        
-        comment_start = line.find("#")
-        stripped_line = line[4:comment_start].strip()
-        floor_read.append(stripped_line.split(" "))
-        if floor_read[-1][0] == "{_eof}":
-            return read_floorinfo_parms(floor_read), pad_close(cave, start_index + i)
+    parms, start_index = readID32(cave, start_index)
+    return read_floorinfo_parms(parms), start_index
 
-def read_floorinfo_parms(floor_read):
+def read_floorinfo_parms(floor_read:dict):
     floorinfo = get_unread_floorinfo()
-    for parm in floor_read: # how do I switch case help
-        if parm[0] == "{f000}":
-            floorinfo.floor_start = strip_int(parm[2])
-        if parm[0] == "{f001}":
-            floorinfo.floor_end = strip_int(parm[2])
-        if parm[0] == "{f002}":
-            floorinfo.teki_num = strip_int(parm[2])
-        if parm[0] == "{f003}":
-            floorinfo.item_num = strip_int(parm[2])
-        if parm[0] == "{f004}":
-            floorinfo.gate_num = strip_int(parm[2])
-        if parm[0] == "{f005}":
-            floorinfo.room_num = strip_int(parm[2])
-        if parm[0] == "{f006}":
-            floorinfo.corridor_chance = float(parm[2])
-        if parm[0] == "{f007}":
-            floorinfo.geyser = parm[2] == "1"
-        if parm[0] == "{f008}":
-            floorinfo.unit_file = parm[2]
-        if parm[0] == "{f009}":
-            floorinfo.lighting_file = parm[2]
-        if parm[0] == "{f00A}":
-            floorinfo.skybox = parm[2]
-        if parm[0] == "{f010}":
-            floorinfo.is_clogged = parm[2] == "1"
-        if parm[0] == "{f011}":
-            floorinfo.echo = strip_int(parm[2])
-        if parm[0] == "{f012}":
-            floorinfo.music = strip_int(parm[2])
-        if parm[0] == "{f013}":
-            floorinfo.plane = parm[2] == "1"
-        if parm[0] == "{f014}":
-            floorinfo.dead_end = strip_int(parm[2])
-        if parm[0] == "{f015}":
-            floorinfo.use_cap = parm[2] == "1"
-        if parm[0] == "{f016}":
-            floorinfo.timer = float(parm[2])
-        if parm[0] == "{f017}":
-            floorinfo.seesaw = parm[2] == "1"
+    if "f000" in floor_read:
+        floorinfo.floor_start = int(floor_read["f000"])
+    if "f001" in floor_read:
+        floorinfo.floor_end = int(floor_read["f001"])
+    if "f002" in floor_read:
+        floorinfo.teki_num = int(floor_read["f002"])
+    if "f003" in floor_read:
+        floorinfo.item_num = int(floor_read["f003"])
+    if "f004" in floor_read:
+        floorinfo.gate_num = int(floor_read["f004"])
+    if "f005" in floor_read:
+        floorinfo.room_num = int(floor_read["f005"])
+    if "f006" in floor_read:
+        floorinfo.corridor_chance = float(floor_read["f006"])
+    if "f007" in floor_read:
+        floorinfo.geyser = bool(int(floor_read["f007"]))
+    if "f008" in floor_read:
+        floorinfo.unit_file = floor_read["f008"]
+    if "f009" in floor_read:
+        floorinfo.lighting_file = floor_read["f009"]
+    if "f00A" in floor_read:
+        floorinfo.skybox = floor_read["f00A"]
+    if "f010" in floor_read:
+        floorinfo.is_clogged = bool(int(floor_read["f010"]))
+    if "f011" in floor_read:
+        floorinfo.echo = int(floor_read["f011"])
+    if "f012" in floor_read:
+        floorinfo.music = int(floor_read["f012"])
+    if "f013" in floor_read:
+        floorinfo.plane = bool(int(floor_read["f013"]))
+    if "f014" in floor_read:
+        floorinfo.dead_end = int(floor_read["f014"])
+    if "f015" in floor_read:
+        floorinfo.use_cap = bool(int(floor_read["f015"]))
+    if "f016" in floor_read:
+        floorinfo.timer = float(floor_read["f016"])
+    if "f017" in floor_read:
+        floorinfo.seesaw = bool(int(floor_read["f017"]))
     return floorinfo
 
 
 def read_teki(cave, start_index):
-    start_index += 2
-    teki_num = str(cave[start_index])
-    comment_start = teki_num.index("#") if "#" in teki_num else -1
-    teki_num = teki_num[4:comment_start].strip(" \\trnb")
-    teki_num = int(teki_num)
-    if teki_num == 0:
-        return TekiInfo(0, []), pad_close(cave, start_index)
+    teki_num, start_index = next_int_list(cave, start_index)
     teki = []
-    start_index += 1
-    for i, line in enumerate(cave[start_index:]):
-        line = str(line)
-        if i % 2 == 0:
-            comment_start = line.find("#")
-            teki_read = line[4:comment_start].strip(" \\")
-            while "  " in teki_read:
-                teki_read = teki_read.replace("  ", " ")
-            teki_read = teki_read.split(" ")
-        else:
-            comment_start = line.find("#")
-            spawn_read = line[4:comment_start].strip(" \\trnb")
-            spawn_read = spawn_read.split(" ")
-            root = read_tekibase(teki_read, strip_int(spawn_read[0]))
-            teki.append(Teki(root.name, root.fill, root.weight, root.falltype, root.has_item, root.item, strip_int(spawn_read[0])))
-        if i == teki_num * 2:
-            return TekiInfo(teki_num, teki), pad_close(cave, start_index + i)
+    for i in range(teki_num):
+        name, start_index, subval = next_string_list(cave, start_index)
+        count, start_index = next_int_list(cave, start_index, subval)
+        spawn, start_index = next_int_list(cave, start_index)
+        tekibase = read_tekibase([name, str(count)], spawn)
+        teki.append(
+            Teki(tekibase.name, tekibase.fill, tekibase.weight, tekibase.falltype, tekibase.has_item, tekibase.item, spawn)
+        )
+    return TekiInfo(teki_num, teki), start_index + 1
 
 
 def read_tekibase(tekistr, spawn=0):
-    num = tekistr[1].strip("\\rnt")
-    if spawn == 6:
-        fill = strip_int(num)
-        weight = 0
-    elif len(str(num)) == 1:
-        fill = 0
-        weight = strip_int(str(num)[0])
-    else:
-        fill = strip_int(str(num)[0:-1])
-        weight = strip_int(num[-1])
     i = 0
     fall_type = 0
     if tekistr[0][0] == "$":
@@ -278,29 +315,28 @@ def read_tekibase(tekistr, spawn=0):
         i += len(teki)
         i += 1
         item = tekistr[0][i:]
-        print(item)
+
+    num = next_int(tekistr[1])
+    if spawn == 6:
+        fill = num
+        weight = 0
+    else:
+        fill = num // 10
+        weight = num % 10
+
     return TekiBase(teki, fill, weight, fall_type, has_item, item)
 
 def read_item(cave, start_index):
-    item = []
-    start_index += 2
-    item_num = str(cave[start_index])
-    comment_start = item_num.index("#") if "#" in item_num else -1
-    item_num = item_num[4:comment_start].strip(" \\trnb\t\r\b")
-    item_num = strip_int(item_num)
-    if item_num == 0:
-        return ItemInfo(0, []), pad_close(cave, start_index)
-    start_index += 1
-    for i, line in enumerate(cave[start_index:]):
-        line = str(line)
-        comment_start = line.find("#")
-        treasure_read = line[4:comment_start].strip()
-        while "  " in treasure_read:
-            treasure_read = treasure_read.replace("  ", " ")
-        treasure_read = treasure_read.split(" ")
-        item.append(read_treasurebase(treasure_read))
-        if i == item_num - 1:
-            return ItemInfo(item_num, item), pad_close(cave, start_index + i)
+    item_num, start_index = next_int_list(cave, start_index)
+    items = []
+    for i in range(item_num):
+        name, start_index, subval = next_string_list(cave, start_index)
+        count, start_index = next_int_list(cave, start_index, subval)
+        treasure = read_treasurebase([name, str(count)])
+        items.append(
+            treasure
+        )
+    return ItemInfo(item_num, items), start_index + 1
 
 def read_treasurebase(treasure_read):
     num = treasure_read[1].strip("\\rnt")
@@ -314,60 +350,31 @@ def read_treasurebase(treasure_read):
     return Treasure(treasure_read[0], fill, weight)
 
 def read_gate(cave, start_index):
-    start_index += 2
-    gate_count = str(cave[start_index])
-    comment_start = gate_count.find("#")
-    gate_count = gate_count[4:comment_start].strip(" \\trnb")
-    gate_count = int(gate_count)
-
-    if gate_count == 0:
-        return GateInfo(0, []), pad_close(cave, start_index)
-
-    gate = []
-    start_index += 1
-    for i, line in enumerate(cave[start_index:]):
-        line = str(line)
-        if i % 2 == 0:
-            comment_start = line.find("#")
-            gate_read = line[4:comment_start].strip()
-            gate_read = gate_read.split(" ")
-            while "  " in gate_read:
-                gate_read = gate_read.replace("  ", " ")
-        else:
-            comment_start = line.find("#")
-            weight_read = line[4:comment_start].strip(" \\trnb")
-            gate.append(Gate(gate_read[0], float(gate_read[1].strip("\\rnt")), strip_int(weight_read[-1])))
-        if i == gate_count * 2 - 1:
-            return GateInfo(gate_count, gate), pad_close(cave, start_index + i)
+    gate_num, start_index = next_int_list(cave, start_index)
+    gates = []
+    for i in range(gate_num):
+        name, start_index, subval = next_string_list(cave, start_index)
+        life, start_index = next_float_list(cave, start_index, subval)
+        weight, start_index = next_int_list(cave, start_index)
+        gates.append(
+            Gate(name, life, weight)
+        )
+    return GateInfo(gate_num, gates), start_index + 1
 
 def read_cap(cave, start_index):
-    start_index += 2
-    cap_count = str(cave[start_index])
-    comment_start = cap_count.index("#") if "#" in cap_count else -1
-    cap_count = cap_count[4:comment_start].strip(" \\trnb")
-    cap_count = int(cap_count)
-    if cap_count == 0:
-        return CapInfo(0, []), pad_close(cave, start_index)
-    cap = []
-    start_index += 1
-    for i, line in enumerate(cave[start_index:]):
-        line = str(line)
-        if i % 3 == 0:
-            comment_start = line.find("#")
-            captype_read = line[4:comment_start].strip(" \\trnb")
-        elif i % 3 == 1:
-            comment_start = line.find("#")
-            cap_read = line[4:comment_start].strip()
-            while "  " in cap_read:
-                cap_read = cap_read.replace("  ", " ")
-            cap_read = cap_read.split(" ")
-        else:
-            comment_start = line.find("#")
-            type_read = line[4:comment_start].strip(" \\trnb")
-            root = read_tekibase(cap_read)
-            cap.append(Cap(strip_int(captype_read), root.name, root.fill, root.weight, root.falltype, root.has_item, root.item, type_read == "1"))
-        if i == cap_count * 3 - 1:
-            return CapInfo(cap_count, cap), pad_close(cave, start_index + i)
+    cap_num, start_index = next_int_list(cave, start_index)
+    caps = []
+    for i in range(cap_num):
+        captype, start_index = next_int_list(cave, start_index)
+        name, start_index, subval = next_string_list(cave, start_index)
+        weight, start_index = next_int_list(cave, start_index, subval)
+        count, start_index = next_int_list(cave, start_index)
+        
+        tekibase = read_tekibase([name, str(count)], 0)
+        caps.append(
+            Cap(captype, tekibase.name, tekibase.fill, tekibase.weight, tekibase.falltype, tekibase.has_item, tekibase.item, bool(captype))
+        )
+    return CapInfo(cap_num, caps), start_index + 1
 
 def get_default_floorinfo():
     default_floor = Floorinfo()
@@ -423,8 +430,6 @@ DEFAULT_CAVEINFO = CaveInfo(1, [get_default_floor()])
 def export_cave(caveinfo:CaveInfo):
     export_string = ["# Caveinfo - Made with Drought Ender's Cave Creator\n"]
     export_string.append("{\n")
-    print(caveinfo.floor_count)
-    print(len(caveinfo.floors))
     export_string.append(f"\t{{c000}} 4 {caveinfo.floor_count} \t# Floor Count\n")
     export_string.append("\t{_eof} \n")
     export_string.append("}\n")
