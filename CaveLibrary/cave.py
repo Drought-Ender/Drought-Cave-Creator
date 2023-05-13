@@ -367,12 +367,12 @@ def read_cap(cave, start_index):
     for i in range(cap_num):
         captype, start_index = next_int_list(cave, start_index)
         name, start_index, subval = next_string_list(cave, start_index)
-        weight, start_index = next_int_list(cave, start_index, subval)
-        count, start_index = next_int_list(cave, start_index)
+        count, start_index = next_int_list(cave, start_index, subval)
+        type, start_index = next_int_list(cave, start_index)
         
         tekibase = read_tekibase([name, str(count)], 0)
         caps.append(
-            Cap(captype, tekibase.name, tekibase.fill, tekibase.weight, tekibase.falltype, tekibase.has_item, tekibase.item, bool(captype))
+            Cap(captype, tekibase.name, tekibase.fill, tekibase.weight, tekibase.falltype, tekibase.has_item, tekibase.item, bool(type))
         )
     return CapInfo(cap_num, caps), start_index + 1
 
