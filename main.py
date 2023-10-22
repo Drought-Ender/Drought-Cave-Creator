@@ -35,7 +35,7 @@ class Main(QMainWindow):
 
         logo = Image(self, "./Assets/logo.png")
 
-        version = QLabel("ver 1.1.0", self)
+        version = QLabel("ver 1.1.3", self)
         version.move(10, 440)
 
         open_cave = QPushButton("Open Cave", self)

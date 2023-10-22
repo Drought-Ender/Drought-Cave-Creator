@@ -2,7 +2,7 @@ import settings
 
 strip_int = lambda x : int(''.join(filter(str.isdigit, x)))
 
-strip_float = lambda x : float(''.join(filter(str.isdecimal, x)))
+strip_float = lambda x : float(re.findall(r'\d+\.\d+', x)[0])
 
 
 class Floorinfo:
