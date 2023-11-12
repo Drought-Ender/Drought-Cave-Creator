@@ -1,4 +1,5 @@
 import settings
+import re
 
 strip_int = lambda x : int(''.join(filter(str.isdigit, x)))
 
