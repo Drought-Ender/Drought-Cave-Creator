@@ -17,7 +17,6 @@ In addition to being a GUI cave editor, there are features such as:
 1. Units file editor
 2. CaveGen integration
 3. More Non-Vanilla integrations, especially with modded enemies
-4. Less GUI abstraction
 
 ### Special Thanks To
 - [Chemi/chemicalqq (mayabyte)](https://github.com/mayabyte) & [JHawk4 (JHaack4)](https://github.com/JHaack4/CaveGen) for [CaveGen](https://github.com/mayabyte/CaveGen)
