@@ -3,7 +3,7 @@
 ## How to run
 
 1. Have Python installed
-2. Make sure PySide6, PyQt6, PyYAML, Pillow, and appdirs are installed (`pip install <library>` in a command prompt if they are not)
+2. Make sure PySide6, PyQt6, PyYAML, Pillow, and appdirs are installed (`pip install <library>` in a command prompt if they are not) 
 3. Open command prompt type `python3` and drag the `main.py` file into the prompt (or simply click on main.py if you're using windows).
 
 The python file will automatically adjust it's work directory to where it was run, so there is no worry about having to change directory.
@@ -12,14 +12,12 @@ The python file will automatically adjust it's work directory to where it was ru
 
 This is a cave creator designed around being geared to full game applications rather than challenge mode or CaveNet (which has not been reimplmented, sorry).
 
-The main pros of using this over Jimble's are:
+In addition to being a GUI cave editor, there are features such as:
 
 1. Units file editor
 2. CaveGen integration
 3. More Non-Vanilla integrations, especially with modded enemies
 4. Less GUI abstraction
-
-Though I'd still recomend passing caves through Jimble's cave creator if you're looking to use CaveNet.
 
 ### Special Thanks To
 - [Chemi/chemicalqq (mayabyte)](https://github.com/mayabyte) & [JHawk4 (JHaack4)](https://github.com/JHaack4/CaveGen) for [CaveGen](https://github.com/mayabyte/CaveGen)
@@ -164,7 +162,7 @@ pickling is not a secure method of storage, do not accept *.pickle* files from p
 In the top center of the cave editor is an enumerated bar of the floors within the cave. Left of that bar is two buttons, one that says *Add Floor* and one that says *Remove Floor*, their functions are self explanatory
 
 ##### Note:
-Remove a floor by accident? Do not fear, the floor itself is not deleated, clicking *Add Floor* will return the floor back before it was deleated.
+Remove a floor by accident? Do not fear, the floor itself is not deleted, clicking *Add Floor* will return the floor back before it was deleted.
 
 #### Floorinfo
 
