@@ -19,7 +19,7 @@ The main pros of using this over Jimble's are:
 3. More Non-Vanilla integrations, especially with modded enemies
 4. Less GUI abstraction
 
-Though I'd still recomend passing caves through Jimble's cave creator if you're looking to use CaveNet.
+Though I'd still recomend passing caves through Jimble's cave creator if you're looking to use CaveNet.(Rip)
 
 ### Special Thanks To
 - [Chemi/chemicalqq (mayabyte)](https://github.com/mayabyte) & [JHawk4 (JHaack4)](https://github.com/JHaack4/CaveGen) for [CaveGen](https://github.com/mayabyte/CaveGen)
