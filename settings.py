@@ -249,6 +249,17 @@ class PresetGUI(QMainWindow):
     
     def root(self, file):
         mapunits_folder = f"{file}/files/user/Mukki/mapunits/"
+
+        cave_light_folder = f"{file}/files/user/Abe/cave/"
+
+        # try and see if this is a wii filesystem
+        if os.path.exists(f"{file}/files/pikmin2/user/"):
+            print("detected wii filesystem")
+            mapunits_folder = f"{file}/files/pikmin2/user/Mukki/mapunits/"
+            cave_light_folder = f"{file}/files/pikmin2/user/Abe/cave/"
+
+            
+
         if os.path.exists(f"{mapunits_folder}caveinfo/"):
             self.cave_folder.edit.setText(f"{mapunits_folder}caveinfo/")
         else:
@@ -261,8 +272,8 @@ class PresetGUI(QMainWindow):
             self.unit_folder.edit.setText(f"{mapunits_folder}arc/")
         else:
             QMessageBox.warning(self, "Folder not found", "Could not find arc folder")
-        if os.path.exists(f"{file}/files/user/Abe/cave/"):
-            self.light_folder.edit.setText(f"{file}/files/user/Abe/cave/")
+        if os.path.exists(cave_light_folder):
+            self.light_folder.edit.setText(cave_light_folder)
         else:
             QMessageBox.warning(self, "Folder not found", "Could not find light folder")
     
