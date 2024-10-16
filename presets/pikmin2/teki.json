@@ -83,7 +83,7 @@
     "Hana" : {"common" : "Creeping Chrysanthemum", "id" : 84, "use" : true, "fall" : false, "item" : true},
     "DaiodoRed" : {"common" : "Glowstem (red)", "id" : 85, "use" : true, "fall" : false, "item" : false},
     "DaiodoGreen" : {"common" : "Glowstem (green)", "id" : 86, "use" : true, "fall" : false, "item" : false},
-    "Magaret" : {"common" : "Magaret", "id" : 87, "use" : true, "fall" : false, "item" : false},
+    "Magaret" : {"common" : "Margaret", "id" : 87, "use" : true, "fall" : false, "item" : false},
     "Nekojarashi" : {"common" : "Foxtail", "id" : 88, "use" : true, "fall" : false, "item" : false},
     "Chiyogami" : {"common" : "Chigoyami paper", "id" : 89, "use" : true, "fall" : false, "item" : false},
     "Zenmai" : {"common" : "Fiddlehead", "id" : 90, "use" : true, "fall" : false, "item" : false},
