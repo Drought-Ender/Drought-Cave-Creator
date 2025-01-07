@@ -26,3 +26,9 @@ Key:
 
 -- Ver 1.0.0 --
 = Full release
+
+-- Ver 1.1.0 --
++ Added the abillity to insert/delete objects with right click
+
+-- Ver 1.1.2 -- 
+! Fixed a bug where the falltype of an enemy would be reset upon loading the cave file

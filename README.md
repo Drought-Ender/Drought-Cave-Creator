@@ -19,9 +19,9 @@ In addition to being a GUI cave editor, there are features such as:
 3. More Non-Vanilla integrations, especially with modded enemies
 
 ### Special Thanks To
-- [Chemi/chemicalqq (mayabyte)](https://github.com/mayabyte) & [JHawk4 (JHaack4)](https://github.com/JHaack4/CaveGen) for [CaveGen](https://github.com/mayabyte/CaveGen)
-- [Yoshi2 (RenolY2)](https://github.com/RenolY2) for the simpiler [Yaz0/Rarc library](https://github.com/RenolY2/pikmin-tools/tree/master/lib)
-- [LagoLunatic](https://github.com/LagoLunatic) for the [wwlib](https://github.com/LagoLunatic/wwrando/tree/master/wwlib) library
+- [Chemi/chemicalqq (mayabyte)](https://github.com/mayabyte) & [JHawk4 (JHaack4)](https://github.com/JHaack4/CaveGen) for [CaveGen](https://github.com/mayabyte/CaveGen) (Under ./CaveGen-master/)
+- [Yoshi2 (RenolY2)](https://github.com/RenolY2) for the simpiler [Yaz0/Rarc library](https://github.com/RenolY2/pikmin-tools/tree/master/lib) (under ./lib/)
+- [LagoLunatic](https://github.com/LagoLunatic) for the [wwlib](https://github.com/LagoLunatic/wwrando/tree/master/wwlib) library (under ./wwlib/)
 - [The Pikmin Technical Knowledge Base](https://pikmintkb.com/wiki/)
 
 ### Planned Features:
